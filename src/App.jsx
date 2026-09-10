@@ -1,121 +1,137 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="page">
+      <header className="nav">
+        <div className="nav-inner">
+          <div className="logo">JobFlow AI</div>
+          <nav className="nav-links" aria-label="Primary">
+            <span>Dashboard</span>
+            <span>Jobs</span>
+            <span>JD Analyzer</span>
+            <span>Resume Match</span>
+            <span>Interview Prep</span>
+          </nav>
         </div>
-        <div>
-          <h1>JobFlow AI</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      </header>
 
-      <div className="ticks"></div>
+      <main>
+        <section className="hero">
+          <div className="hero-inner">
+            <h1>Your AI Job Search Copilot</h1>
+            <p className="subtitle">
+              Track applications, analyze job descriptions, prepare for
+              interviews, and understand your job search funnel.
+            </p>
+            <div className="hero-actions">
+              <button type="button" className="btn btn-primary">
+                Add a Job
+              </button>
+              <button type="button" className="btn btn-secondary">
+                Analyze a JD
+              </button>
+            </div>
+          </div>
+        </section>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <section className="section">
+          <div className="section-inner">
+            <h2>Dashboard Preview</h2>
+            <div className="stat-grid">
+              <article className="card">
+                <p className="card-label">Applications</p>
+                <p className="card-value">24</p>
+              </article>
+              <article className="card">
+                <p className="card-label">Interviews</p>
+                <p className="card-value">6</p>
+              </article>
+              <article className="card">
+                <p className="card-label">Interview Rate</p>
+                <p className="card-value">25%</p>
+              </article>
+              <article className="card">
+                <p className="card-label">Offers</p>
+                <p className="card-value">1</p>
+              </article>
+            </div>
+          </div>
+        </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+        <section className="section">
+          <div className="section-inner">
+            <h2>Job Search Funnel</h2>
+            <div className="funnel">
+              <article className="funnel-step">
+                <p className="card-label">Applied</p>
+                <p className="card-value">24</p>
+              </article>
+              <article className="funnel-step">
+                <p className="card-label">Screening</p>
+                <p className="card-value">12</p>
+              </article>
+              <article className="funnel-step">
+                <p className="card-label">Interview</p>
+                <p className="card-value">6</p>
+              </article>
+              <article className="funnel-step">
+                <p className="card-label">Final Round</p>
+                <p className="card-value">2</p>
+              </article>
+              <article className="funnel-step">
+                <p className="card-label">Offer</p>
+                <p className="card-value">1</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section className="section section-last">
+          <div className="section-inner">
+            <h2>Recent Applications</h2>
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Company</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Source</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>ByteDance</td>
+                    <td>Product Manager</td>
+                    <td>Interview</td>
+                    <td>Campus</td>
+                  </tr>
+                  <tr>
+                    <td>JD.com</td>
+                    <td>Product Operations</td>
+                    <td>Applied</td>
+                    <td>Official Website</td>
+                  </tr>
+                  <tr>
+                    <td>Meitu</td>
+                    <td>Product Manager</td>
+                    <td>Screening</td>
+                    <td>Boss</td>
+                  </tr>
+                  <tr>
+                    <td>Pinduoduo</td>
+                    <td>Product Operations</td>
+                    <td>Applied</td>
+                    <td>Campus</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
   )
 }
 
