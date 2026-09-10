@@ -378,6 +378,49 @@ function analyzeJD(text) {
   }
 }
 
+function formatAIAnalysis(analysis) {
+  const listKeys = [
+    'coreResponsibilities',
+    'hardSkills',
+    'softSkills',
+    'keywords',
+    'niceToHave',
+    'interviewFocus',
+  ]
+  const hasValidLists = listKeys.every(
+    (key) =>
+      Array.isArray(analysis?.[key]) &&
+      analysis[key].every((item) => typeof item === 'string'),
+  )
+  const focusLabels = {
+    product: 'Product',
+    data: 'Data',
+    ai: 'AI',
+    growth: 'Growth',
+  }
+  const validLevels = ['High', 'Medium', 'Low']
+  const hasValidFocus = Object.keys(focusLabels).every((key) =>
+    validLevels.includes(analysis?.jdFocus?.[key]),
+  )
+
+  if (!hasValidLists || !hasValidFocus) {
+    throw new Error('INVALID_AI_RESPONSE')
+  }
+
+  return {
+    responsibilities: analysis.coreResponsibilities.slice(0, 5),
+    hardSkills: analysis.hardSkills.slice(0, 10),
+    softSkills: analysis.softSkills.slice(0, 8),
+    keywords: analysis.keywords.slice(0, 10),
+    niceToHave: analysis.niceToHave.slice(0, 6),
+    interviewFocus: analysis.interviewFocus.slice(0, 5),
+    focus: Object.entries(focusLabels).map(([key, label]) => ({
+      label,
+      level: analysis.jdFocus[key],
+    })),
+  }
+}
+
 function loadJobFlowData() {
   try {
     const savedData = localStorage.getItem(STORAGE_KEY)
@@ -442,6 +485,9 @@ function App() {
   const [jdText, setJdText] = useState('')
   const [jdAnalysis, setJdAnalysis] = useState(null)
   const [jdError, setJdError] = useState('')
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [aiConfigured, setAiConfigured] = useState(null)
+  const [showBasicFallback, setShowBasicFallback] = useState(false)
   const { jobs, counts } = data
 
   useEffect(() => {
@@ -451,6 +497,31 @@ function App() {
       // Keep the page usable if browser storage is unavailable.
     }
   }, [data])
+
+  useEffect(() => {
+    let isCurrent = true
+
+    async function checkAIStatus() {
+      try {
+        const response = await fetch('/api/status')
+        const status = await response.json()
+
+        if (isCurrent) {
+          setAiConfigured(response.ok && status.configured === true)
+        }
+      } catch {
+        if (isCurrent) {
+          setAiConfigured(false)
+        }
+      }
+    }
+
+    checkAIStatus()
+
+    return () => {
+      isCurrent = false
+    }
+  }, [])
 
   const interviewRate = counts.applications
     ? Math.round((counts.interview / counts.applications) * 100)
@@ -577,29 +648,91 @@ function App() {
   function updateJDText(event) {
     setJdText(event.target.value)
     setJdError('')
+    setShowBasicFallback(false)
   }
 
   function loadSampleJD() {
     setJdText(SAMPLE_JD)
     setJdAnalysis(null)
     setJdError('')
+    setShowBasicFallback(false)
   }
 
-  function handleAnalyzeJD() {
+  async function handleAnalyzeJD() {
     if (!jdText.trim()) {
       setJdAnalysis(null)
       setJdError('Please paste a job description first.')
+      setShowBasicFallback(false)
+      return
+    }
+
+    setIsAnalyzing(true)
+    setJdAnalysis(null)
+    setJdError('')
+    setShowBasicFallback(false)
+
+    try {
+      const response = await fetch('/api/analyze-jd', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jd: jdText }),
+      })
+
+      let result
+
+      try {
+        result = await response.json()
+      } catch {
+        throw new Error('INVALID_AI_RESPONSE')
+      }
+
+      if (!response.ok) {
+        if (result.code === 'AI_NOT_CONFIGURED') {
+          setAiConfigured(false)
+          setJdError('AI service is not configured yet.')
+        } else if (result.code === 'AI_RESPONSE_INVALID') {
+          setJdError('AI returned an unexpected result. Please try again.')
+        } else {
+          setJdError('AI analysis failed. Please try again.')
+        }
+
+        setShowBasicFallback(true)
+        return
+      }
+
+      setJdAnalysis(formatAIAnalysis(result))
+      setAiConfigured(true)
+    } catch (requestError) {
+      if (requestError.message === 'INVALID_AI_RESPONSE') {
+        setJdError('AI returned an unexpected result. Please try again.')
+      } else {
+        setJdError('AI analysis failed. Please try again.')
+      }
+
+      setShowBasicFallback(true)
+    } finally {
+      setIsAnalyzing(false)
+    }
+  }
+
+  function useBasicAnalysis() {
+    if (!jdText.trim()) {
+      setJdAnalysis(null)
+      setJdError('Please paste a job description first.')
+      setShowBasicFallback(false)
       return
     }
 
     setJdAnalysis(analyzeJD(jdText))
     setJdError('')
+    setShowBasicFallback(false)
   }
 
   function clearJD() {
     setJdText('')
     setJdAnalysis(null)
     setJdError('')
+    setShowBasicFallback(false)
   }
 
   return (
@@ -842,13 +975,15 @@ function App() {
                     type="button"
                     className="btn btn-primary"
                     onClick={handleAnalyzeJD}
+                    disabled={isAnalyzing}
                   >
-                    Analyze JD
+                    {isAnalyzing ? 'Analyzing...' : 'Analyze JD'}
                   </button>
                   <button
                     type="button"
                     className="btn btn-secondary"
                     onClick={loadSampleJD}
+                    disabled={isAnalyzing}
                   >
                     Load Sample JD
                   </button>
@@ -856,14 +991,26 @@ function App() {
                     type="button"
                     className="btn btn-plain"
                     onClick={clearJD}
+                    disabled={isAnalyzing}
                   >
                     Clear
                   </button>
                 </div>
                 {jdError ? (
-                  <p className="jd-error" role="alert">
-                    {jdError}
-                  </p>
+                  <div className="jd-error-row">
+                    <p className="jd-error" role="alert">
+                      {jdError}
+                    </p>
+                    {showBasicFallback ? (
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-small"
+                        onClick={useBasicAnalysis}
+                      >
+                        Use Basic Analysis
+                      </button>
+                    ) : null}
+                  </div>
                 ) : null}
               </div>
 
@@ -969,8 +1116,11 @@ function App() {
               ) : null}
 
               <p className="jd-disclaimer">
-                JD Analyzer V1 uses local keyword analysis. AI-powered analysis
-                will be added in the next version.
+                {aiConfigured === null
+                  ? 'Checking AI service availability...'
+                  : aiConfigured
+                    ? 'AI-powered JD analysis with a local basic-analysis fallback.'
+                    : 'AI service is not configured. Local basic analysis is available.'}
               </p>
             </div>
           </section>
