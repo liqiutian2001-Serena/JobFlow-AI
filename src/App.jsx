@@ -91,6 +91,293 @@ const EMPTY_FORM = {
   jobDescription: '',
 }
 
+const SAMPLE_JD = `Product Manager - AI & Growth
+
+We are looking for a Product Manager to join our AI product team.
+
+Responsibilities:
+
+- Work with engineering, design and operations teams to define product requirements.
+- Analyze user behavior and business data to identify growth opportunities.
+- Conduct user research and translate insights into product solutions.
+- Define product metrics and monitor conversion, retention and engagement.
+- Manage product roadmap and prioritize features based on business impact.
+- Support AI-powered product features and work with technical teams on implementation.
+
+Requirements:
+
+- Strong analytical and problem-solving skills.
+- Experience with product management or product operations.
+- Good understanding of user research, A/B testing and data analysis.
+- Excellent communication and cross-functional collaboration skills.
+- Ability to work in a fast-paced environment.
+- Fluent English communication.
+
+Preferred:
+
+- Experience with AI products or large language models.
+- Experience in growth, e-commerce or creator economy.
+- Basic SQL knowledge is a plus.`
+
+const RESPONSIBILITY_RULES = [
+  {
+    label: 'Product requirement definition',
+    pattern: /define product requirements?|product requirement definition/i,
+  },
+  {
+    label: 'User and data analysis',
+    pattern: /analy[sz]e user behavior|business data|data analysis/i,
+  },
+  { label: 'User research', pattern: /user research/i },
+  {
+    label: 'Product roadmap management',
+    pattern: /product roadmap|prioritize features/i,
+  },
+  {
+    label: 'Cross-functional collaboration',
+    pattern: /cross-functional|work with engineering|engineering, design and operations/i,
+  },
+  {
+    label: 'Product metrics and performance monitoring',
+    pattern: /product metrics|conversion|retention|engagement/i,
+  },
+]
+
+const HARD_SKILL_RULES = [
+  {
+    label: 'Product Management',
+    pattern: /product management|product manager|product requirements?/i,
+  },
+  { label: 'Product Operations', pattern: /product operations/i },
+  { label: 'SQL', pattern: /\bsql\b/i },
+  {
+    label: 'Data Analysis',
+    pattern: /data analysis|business data|analy[sz]e user behavior/i,
+  },
+  { label: 'A/B Testing', pattern: /a\/b testing|\bab testing\b/i },
+  { label: 'User Research', pattern: /user research/i },
+  { label: 'AI', pattern: /\bai\b|ai-powered|artificial intelligence/i },
+  {
+    label: 'Large Language Models',
+    pattern: /large language models?|\bllms?\b/i,
+  },
+  { label: 'E-commerce', pattern: /e-commerce|ecommerce/i },
+  { label: 'Growth', pattern: /\bgrowth\b/i },
+  { label: 'Analytics', pattern: /\banalytics?\b/i },
+  { label: 'Product Metrics', pattern: /product metrics?/i },
+  { label: 'Roadmap', pattern: /\broadmap\b/i },
+]
+
+const SOFT_SKILL_RULES = [
+  { label: 'Communication', pattern: /communication|communicate/i },
+  {
+    label: 'Collaboration',
+    pattern: /collaboration|cross-functional|work with engineering/i,
+  },
+  { label: 'Problem Solving', pattern: /problem-solving|problem solving/i },
+  { label: 'Analytical Thinking', pattern: /analytical|analytical thinking/i },
+  { label: 'Ownership', pattern: /\bownership\b|\bown\b/i },
+  { label: 'Leadership', pattern: /leadership|lead a team|team lead/i },
+  { label: 'Fast-paced Adaptability', pattern: /fast-paced|adaptability/i },
+  { label: 'Stakeholder Management', pattern: /stakeholder management/i },
+]
+
+const KEYWORD_RULES = [
+  { label: 'AI', pattern: /\bai\b|ai-powered|artificial intelligence/i },
+  { label: 'Growth', pattern: /\bgrowth\b/i },
+  {
+    label: 'Product Management',
+    pattern: /product management|product manager|product requirements?/i,
+  },
+  {
+    label: 'Data Analysis',
+    pattern: /data analysis|business data|analy[sz]e user behavior/i,
+  },
+  { label: 'User Research', pattern: /user research/i },
+  { label: 'Cross-functional', pattern: /cross-functional|work with engineering/i },
+  { label: 'A/B Testing', pattern: /a\/b testing|\bab testing\b/i },
+  { label: 'SQL', pattern: /\bsql\b/i },
+  { label: 'Product Metrics', pattern: /product metrics?/i },
+  { label: 'Roadmap', pattern: /\broadmap\b/i },
+  { label: 'Product Operations', pattern: /product operations/i },
+  {
+    label: 'Large Language Models',
+    pattern: /large language models?|\bllms?\b/i,
+  },
+  { label: 'E-commerce', pattern: /e-commerce|ecommerce/i },
+]
+
+function matchRules(text, rules) {
+  return rules.filter((rule) => rule.pattern.test(text)).map((rule) => rule.label)
+}
+
+function extractResponsibilities(text) {
+  const matchedResponsibilities = matchRules(text, RESPONSIBILITY_RULES)
+
+  if (matchedResponsibilities.length > 0) {
+    return matchedResponsibilities.slice(0, 5)
+  }
+
+  const section = text.match(
+    /responsibilities\s*:([\s\S]*?)(?:\n\s*(?:requirements?|qualifications?)\s*:|$)/i,
+  )
+  const lines = (section?.[1] ?? text).split('\n')
+
+  return lines
+    .map((line) => line.replace(/^[-*•]\s*/, '').trim())
+    .filter((line) => line.length > 0)
+    .slice(0, 5)
+}
+
+function extractSkills(text, rules) {
+  return matchRules(text, rules)
+}
+
+function extractNiceToHave(text) {
+  const lines = text.split('\n').map((line) => line.trim())
+  const items = []
+  let isNiceToHaveSection = false
+
+  for (const line of lines) {
+    if (/^(preferred|nice to have|bonus)\s*:/i.test(line)) {
+      isNiceToHaveSection = true
+      const inlineText = line.replace(/^[^:]+:\s*/, '')
+
+      if (inlineText) {
+        items.push(inlineText)
+      }
+      continue
+    }
+
+    if (
+      isNiceToHaveSection &&
+      /^[a-z][a-z /&-]{1,40}:$/i.test(line) &&
+      !/^(preferred|nice to have|bonus)\s*:/i.test(line)
+    ) {
+      break
+    }
+
+    if (isNiceToHaveSection && line) {
+      items.push(line.replace(/^[-*•]\s*/, ''))
+    }
+  }
+
+  if (items.length > 0) {
+    return items.slice(0, 5)
+  }
+
+  return lines
+    .filter((line) => /nice to have|bonus|preferred|is a plus/i.test(line))
+    .map((line) => line.replace(/^[-*•]\s*/, ''))
+    .slice(0, 5)
+}
+
+function generateInterviewFocus(hardSkills, softSkills) {
+  const suggestions = []
+
+  if (hardSkills.includes('Data Analysis')) {
+    suggestions.push(
+      'Prepare one example where you used data to identify a product or business problem.',
+    )
+  }
+  if (hardSkills.includes('User Research')) {
+    suggestions.push(
+      'Prepare one example of how user research changed your product decision.',
+    )
+  }
+  if (
+    hardSkills.includes('AI') ||
+    hardSkills.includes('Large Language Models')
+  ) {
+    suggestions.push(
+      'Be ready to explain how you would design or evaluate an AI-powered product feature.',
+    )
+  }
+  if (hardSkills.includes('Growth')) {
+    suggestions.push(
+      'Prepare to explain a growth funnel and the key metric you would optimize.',
+    )
+  }
+  if (softSkills.includes('Collaboration')) {
+    suggestions.push(
+      'Prepare a STAR example of working with engineering, design or operations teams.',
+    )
+  }
+
+  if (suggestions.length === 0) {
+    suggestions.push(
+      'Prepare examples that show how your experience matches the main responsibilities.',
+    )
+  }
+
+  return suggestions.slice(0, 5)
+}
+
+function focusLevel(evidenceCount, highThreshold) {
+  if (evidenceCount >= highThreshold) {
+    return 'High'
+  }
+
+  return evidenceCount > 0 ? 'Medium' : 'Low'
+}
+
+function calculateJDFocus(hardSkills) {
+  const countSkills = (skills) =>
+    skills.filter((skill) => hardSkills.includes(skill)).length
+
+  return [
+    {
+      label: 'Product',
+      level: focusLevel(
+        countSkills([
+          'Product Management',
+          'Product Operations',
+          'Product Metrics',
+          'Roadmap',
+          'User Research',
+        ]),
+        3,
+      ),
+    },
+    {
+      label: 'Data',
+      level: focusLevel(
+        countSkills([
+          'Data Analysis',
+          'SQL',
+          'A/B Testing',
+          'Analytics',
+          'Product Metrics',
+        ]),
+        5,
+      ),
+    },
+    {
+      label: 'AI',
+      level: focusLevel(countSkills(['AI', 'Large Language Models']), 2),
+    },
+    {
+      label: 'Growth',
+      level: focusLevel(countSkills(['Growth', 'E-commerce', 'Analytics']), 3),
+    },
+  ]
+}
+
+function analyzeJD(text) {
+  const hardSkills = extractSkills(text, HARD_SKILL_RULES)
+  const softSkills = extractSkills(text, SOFT_SKILL_RULES)
+
+  return {
+    responsibilities: extractResponsibilities(text),
+    hardSkills,
+    softSkills,
+    keywords: matchRules(text, KEYWORD_RULES).slice(0, 10),
+    niceToHave: extractNiceToHave(text),
+    interviewFocus: generateInterviewFocus(hardSkills, softSkills),
+    focus: calculateJDFocus(hardSkills),
+  }
+}
+
 function loadJobFlowData() {
   try {
     const savedData = localStorage.getItem(STORAGE_KEY)
@@ -152,6 +439,9 @@ function App() {
   const [jobToDelete, setJobToDelete] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState('')
+  const [jdText, setJdText] = useState('')
+  const [jdAnalysis, setJdAnalysis] = useState(null)
+  const [jdError, setJdError] = useState('')
   const { jobs, counts } = data
 
   useEffect(() => {
@@ -284,6 +574,34 @@ function App() {
     setJobToDelete(null)
   }
 
+  function updateJDText(event) {
+    setJdText(event.target.value)
+    setJdError('')
+  }
+
+  function loadSampleJD() {
+    setJdText(SAMPLE_JD)
+    setJdAnalysis(null)
+    setJdError('')
+  }
+
+  function handleAnalyzeJD() {
+    if (!jdText.trim()) {
+      setJdAnalysis(null)
+      setJdError('Please paste a job description first.')
+      return
+    }
+
+    setJdAnalysis(analyzeJD(jdText))
+    setJdError('')
+  }
+
+  function clearJD() {
+    setJdText('')
+    setJdAnalysis(null)
+    setJdError('')
+  }
+
   return (
     <div className="page">
       <header className="nav">
@@ -308,7 +626,16 @@ function App() {
             >
               Jobs
             </button>
-            <span>JD Analyzer</span>
+            <button
+              type="button"
+              className={`nav-link ${
+                activeView === 'jd-analyzer' ? 'active' : ''
+              }`}
+              aria-current={activeView === 'jd-analyzer' ? 'page' : undefined}
+              onClick={() => setActiveView('jd-analyzer')}
+            >
+              JD Analyzer
+            </button>
             <span>Resume Match</span>
             <span>Interview Prep</span>
           </nav>
@@ -333,7 +660,11 @@ function App() {
                   >
                     Add a Job
                   </button>
-                  <button type="button" className="btn btn-secondary">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setActiveView('jd-analyzer')}
+                  >
                     Analyze a JD
                   </button>
                 </div>
@@ -420,7 +751,7 @@ function App() {
               </div>
             </section>
           </>
-        ) : (
+        ) : activeView === 'jobs' ? (
           <section className="jobs-page">
             <div className="section-inner">
               <div className="jobs-header">
@@ -488,6 +819,159 @@ function App() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </section>
+        ) : (
+          <section className="jd-page">
+            <div className="section-inner jd-inner">
+              <header className="jd-header">
+                <h1>JD Analyzer</h1>
+                <p>Understand what the role really requires before you apply.</p>
+              </header>
+
+              <div className="jd-input-card">
+                <label htmlFor="jd-text">Paste Job Description</label>
+                <textarea
+                  id="jd-text"
+                  value={jdText}
+                  onChange={updateJDText}
+                  placeholder="Paste the full job description here..."
+                />
+                <div className="jd-actions">
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleAnalyzeJD}
+                  >
+                    Analyze JD
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={loadSampleJD}
+                  >
+                    Load Sample JD
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-plain"
+                    onClick={clearJD}
+                  >
+                    Clear
+                  </button>
+                </div>
+                {jdError ? (
+                  <p className="jd-error" role="alert">
+                    {jdError}
+                  </p>
+                ) : null}
+              </div>
+
+              {jdAnalysis ? (
+                <div className="jd-results" aria-live="polite">
+                  <section className="focus-preview">
+                    <div className="focus-heading">
+                      <p>JD Complexity / Match Preparation Preview</p>
+                      <h2>JD Focus</h2>
+                    </div>
+                    <div className="focus-grid">
+                      {jdAnalysis.focus.map((item) => (
+                        <div className="focus-item" key={item.label}>
+                          <span>{item.label}</span>
+                          <strong
+                            className={`focus-level focus-${item.level.toLowerCase()}`}
+                          >
+                            {item.level}
+                          </strong>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
+                  <div className="analysis-grid">
+                    <article className="analysis-card">
+                      <h2>Core Responsibilities</h2>
+                      <ul>
+                        {jdAnalysis.responsibilities.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </article>
+
+                    <article className="analysis-card">
+                      <h2>Hard Skills</h2>
+                      {jdAnalysis.hardSkills.length > 0 ? (
+                        <div className="keyword-list">
+                          {jdAnalysis.hardSkills.map((skill) => (
+                            <span className="keyword-tag" key={skill}>
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p>No supported hard-skill keywords found.</p>
+                      )}
+                    </article>
+
+                    <article className="analysis-card">
+                      <h2>Soft Skills</h2>
+                      {jdAnalysis.softSkills.length > 0 ? (
+                        <div className="keyword-list">
+                          {jdAnalysis.softSkills.map((skill) => (
+                            <span className="keyword-tag keyword-tag-soft" key={skill}>
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p>No supported soft-skill keywords found.</p>
+                      )}
+                    </article>
+
+                    <article className="analysis-card">
+                      <h2>Key JD Keywords</h2>
+                      {jdAnalysis.keywords.length > 0 ? (
+                        <div className="keyword-list">
+                          {jdAnalysis.keywords.map((keyword) => (
+                            <span className="keyword-tag keyword-tag-key" key={keyword}>
+                              {keyword}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p>No supported JD keywords found.</p>
+                      )}
+                    </article>
+
+                    <article className="analysis-card">
+                      <h2>Nice to Have</h2>
+                      {jdAnalysis.niceToHave.length > 0 ? (
+                        <ul>
+                          {jdAnalysis.niceToHave.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p>No explicit nice-to-have requirements found.</p>
+                      )}
+                    </article>
+
+                    <article className="analysis-card">
+                      <h2>Interview Focus</h2>
+                      <ul>
+                        {jdAnalysis.interviewFocus.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </article>
+                  </div>
+                </div>
+              ) : null}
+
+              <p className="jd-disclaimer">
+                JD Analyzer V1 uses local keyword analysis. AI-powered analysis
+                will be added in the next version.
+              </p>
             </div>
           </section>
         )}

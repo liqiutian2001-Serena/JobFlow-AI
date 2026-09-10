@@ -115,6 +115,12 @@
   border: 1px solid #b42318;
 }
 
+.btn-plain {
+  color: #475569;
+  background: transparent;
+  border: 1px solid transparent;
+}
+
 .section {
   padding: 48px 0 0;
 }
@@ -306,6 +312,222 @@ tbody tr:last-child td {
   color: #b42318;
 }
 
+.jd-page {
+  padding: 56px 0 72px;
+}
+
+.jd-header {
+  margin-bottom: 28px;
+}
+
+.jd-header h1 {
+  margin: 0;
+  font-size: 32px;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+}
+
+.jd-header p {
+  margin: 10px 0 0;
+  font-size: 16px;
+  color: #64748b;
+}
+
+.jd-input-card,
+.focus-preview,
+.analysis-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.jd-input-card {
+  padding: 24px;
+}
+
+.jd-input-card label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 15px;
+  font-weight: 650;
+  color: #0f172a;
+}
+
+.jd-input-card textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 320px;
+  padding: 14px 16px;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #0f172a;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  resize: vertical;
+}
+
+.jd-input-card textarea:focus {
+  outline: 2px solid #cbd5e1;
+  outline-offset: 1px;
+  border-color: #64748b;
+}
+
+.jd-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.jd-error {
+  margin: 14px 0 0;
+  font-size: 14px;
+  color: #b42318;
+}
+
+.jd-results {
+  margin-top: 24px;
+}
+
+.focus-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 22px 24px;
+}
+
+.focus-heading p {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.focus-heading h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #0f172a;
+}
+
+.focus-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(100px, 1fr));
+  gap: 10px;
+}
+
+.focus-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-width: 110px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #475569;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.focus-level {
+  font-size: 12px;
+}
+
+.focus-high {
+  color: #027a48;
+}
+
+.focus-medium {
+  color: #b54708;
+}
+
+.focus-low {
+  color: #667085;
+}
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.analysis-card {
+  min-height: 190px;
+  padding: 22px;
+}
+
+.analysis-card h2 {
+  margin: 0 0 16px;
+  font-size: 17px;
+  color: #0f172a;
+}
+
+.analysis-card p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #64748b;
+}
+
+.analysis-card ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.analysis-card li {
+  margin-bottom: 9px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #334155;
+}
+
+.analysis-card li:last-child {
+  margin-bottom: 0;
+}
+
+.keyword-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.keyword-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #175cd3;
+  background: #eff8ff;
+  border-radius: 6px;
+}
+
+.keyword-tag-soft {
+  color: #6941c6;
+  background: #f4f3ff;
+}
+
+.keyword-tag-key {
+  color: #344054;
+  background: #f2f4f7;
+}
+
+.jd-disclaimer {
+  margin: 20px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #64748b;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -413,6 +635,16 @@ tbody tr:last-child td {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .focus-preview {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .focus-grid {
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .table-wrap {
     overflow-x: auto;
   }
@@ -427,7 +659,23 @@ tbody tr:last-child td {
     padding-top: 40px;
   }
 
+  .jd-page {
+    padding-top: 40px;
+  }
+
   .jobs-header {
     flex-direction: column;
+  }
+
+  .analysis-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .jd-input-card {
+    padding: 18px;
+  }
+
+  .jd-input-card textarea {
+    min-height: 280px;
   }
 }
