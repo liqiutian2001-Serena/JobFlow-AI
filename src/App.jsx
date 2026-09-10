@@ -3,6 +3,24 @@ import './App.css'
 
 const STORAGE_KEY = 'jobflow-data'
 
+const STATUS_OPTIONS = [
+  'Applied',
+  'Screening',
+  'Interview',
+  'Final Round',
+  'Offer',
+  'Rejected',
+]
+
+const SOURCE_OPTIONS = [
+  'Official Website',
+  'Campus',
+  'Boss',
+  'LinkedIn',
+  'Referral',
+  'Other',
+]
+
 const INITIAL_JOBS = [
   {
     id: 1,
@@ -55,6 +73,15 @@ const COUNT_KEYS = [
   'offer',
 ]
 
+const STATUS_CONTRIBUTIONS = {
+  Applied: [1, 0, 0, 0, 0],
+  Screening: [1, 1, 0, 0, 0],
+  Interview: [1, 1, 1, 0, 0],
+  'Final Round': [1, 1, 1, 1, 0],
+  Offer: [1, 1, 1, 1, 1],
+  Rejected: [1, 0, 0, 0, 0],
+}
+
 const EMPTY_FORM = {
   company: '',
   role: '',
@@ -81,8 +108,8 @@ function loadJobFlowData() {
           (typeof job.id === 'number' || typeof job.id === 'string') &&
           typeof job.company === 'string' &&
           typeof job.role === 'string' &&
-          typeof job.status === 'string' &&
-          typeof job.source === 'string',
+          STATUS_OPTIONS.includes(job.status) &&
+          SOURCE_OPTIONS.includes(job.source),
       )
     const hasValidCounts =
       parsedData.counts &&
@@ -105,40 +132,24 @@ function loadJobFlowData() {
   }
 }
 
-function nextCounts(counts, status) {
-  const next = {
-    ...counts,
-    applications: counts.applications + 1,
-  }
+function applyStatusContribution(counts, status, direction) {
+  const contribution = STATUS_CONTRIBUTIONS[status]
 
-  if (status === 'Screening') {
-    next.screening += 1
-  }
-
-  if (status === 'Interview') {
-    next.screening += 1
-    next.interview += 1
-  }
-
-  if (status === 'Final Round') {
-    next.screening += 1
-    next.interview += 1
-    next.finalRound += 1
-  }
-
-  if (status === 'Offer') {
-    next.screening += 1
-    next.interview += 1
-    next.finalRound += 1
-    next.offer += 1
-  }
-
-  return next
+  return COUNT_KEYS.reduce(
+    (next, key, index) => ({
+      ...next,
+      [key]: counts[key] + contribution[index] * direction,
+    }),
+    {},
+  )
 }
 
 function App() {
   const [data, setData] = useState(loadJobFlowData)
+  const [activeView, setActiveView] = useState('dashboard')
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingJobId, setEditingJobId] = useState(null)
+  const [jobToDelete, setJobToDelete] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState('')
   const { jobs, counts } = data
@@ -151,19 +162,35 @@ function App() {
     }
   }, [data])
 
-  const interviewRate = Math.round(
-    (counts.interview / counts.applications) * 100,
-  )
+  const interviewRate = counts.applications
+    ? Math.round((counts.interview / counts.applications) * 100)
+    : 0
 
-  function openModal() {
+  function openAddModal() {
     setError('')
     setForm(EMPTY_FORM)
+    setEditingJobId(null)
+    setIsModalOpen(true)
+  }
+
+  function openEditModal(job) {
+    setError('')
+    setForm({
+      company: job.company,
+      role: job.role,
+      status: job.status,
+      source: job.source,
+      date: job.date ?? '',
+      jobDescription: job.jobDescription ?? '',
+    })
+    setEditingJobId(job.id)
     setIsModalOpen(true)
   }
 
   function closeModal() {
     setError('')
     setForm(EMPTY_FORM)
+    setEditingJobId(null)
     setIsModalOpen(false)
   }
 
@@ -175,7 +202,7 @@ function App() {
     }))
   }
 
-  function saveJob(event) {
+  function submitJob(event) {
     event.preventDefault()
 
     if (!form.company.trim() || !form.role.trim()) {
@@ -183,8 +210,7 @@ function App() {
       return
     }
 
-    const newJob = {
-      id: Date.now(),
+    const jobDetails = {
       company: form.company.trim(),
       role: form.role.trim(),
       status: form.status,
@@ -193,11 +219,69 @@ function App() {
       jobDescription: form.jobDescription,
     }
 
-    setData((current) => ({
-      jobs: [newJob, ...current.jobs],
-      counts: nextCounts(current.counts, form.status),
-    }))
+    if (editingJobId !== null) {
+      setData((current) => {
+        const originalJob = current.jobs.find(
+          (job) => job.id === editingJobId,
+        )
+
+        if (!originalJob) {
+          return current
+        }
+
+        let nextJobCounts = current.counts
+
+        if (originalJob.status !== form.status) {
+          nextJobCounts = applyStatusContribution(
+            nextJobCounts,
+            originalJob.status,
+            -1,
+          )
+          nextJobCounts = applyStatusContribution(
+            nextJobCounts,
+            form.status,
+            1,
+          )
+        }
+
+        return {
+          jobs: current.jobs.map((job) =>
+            job.id === editingJobId ? { ...job, ...jobDetails } : job,
+          ),
+          counts: nextJobCounts,
+        }
+      })
+    } else {
+      const newJob = {
+        id: Date.now(),
+        ...jobDetails,
+      }
+
+      setData((current) => ({
+        jobs: [newJob, ...current.jobs],
+        counts: applyStatusContribution(current.counts, form.status, 1),
+      }))
+    }
+
     closeModal()
+  }
+
+  function deleteJob() {
+    setData((current) => {
+      const currentJob = current.jobs.find(
+        (job) => job.id === jobToDelete.id,
+      )
+
+      if (!currentJob) {
+        return current
+      }
+
+      return {
+        jobs: current.jobs.filter((job) => job.id !== currentJob.id),
+        counts: applyStatusContribution(current.counts, currentJob.status, -1),
+      }
+    })
+    setJobToDelete(null)
   }
 
   return (
@@ -206,8 +290,24 @@ function App() {
         <div className="nav-inner">
           <div className="logo">JobFlow AI</div>
           <nav className="nav-links" aria-label="Primary">
-            <span>Dashboard</span>
-            <span>Jobs</span>
+            <button
+              type="button"
+              className={`nav-link ${
+                activeView === 'dashboard' ? 'active' : ''
+              }`}
+              aria-current={activeView === 'dashboard' ? 'page' : undefined}
+              onClick={() => setActiveView('dashboard')}
+            >
+              Dashboard
+            </button>
+            <button
+              type="button"
+              className={`nav-link ${activeView === 'jobs' ? 'active' : ''}`}
+              aria-current={activeView === 'jobs' ? 'page' : undefined}
+              onClick={() => setActiveView('jobs')}
+            >
+              Jobs
+            </button>
             <span>JD Analyzer</span>
             <span>Resume Match</span>
             <span>Interview Prep</span>
@@ -216,107 +316,181 @@ function App() {
       </header>
 
       <main>
-        <section className="hero">
-          <div className="hero-inner">
-            <h1>Your AI Job Search Copilot</h1>
-            <p className="subtitle">
-              Track applications, analyze job descriptions, prepare for
-              interviews, and understand your job search funnel.
-            </p>
-            <div className="hero-actions">
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={openModal}
-              >
-                Add a Job
-              </button>
-              <button type="button" className="btn btn-secondary">
-                Analyze a JD
-              </button>
-            </div>
-          </div>
-        </section>
+        {activeView === 'dashboard' ? (
+          <>
+            <section className="hero">
+              <div className="hero-inner">
+                <h1>Your AI Job Search Copilot</h1>
+                <p className="subtitle">
+                  Track applications, analyze job descriptions, prepare for
+                  interviews, and understand your job search funnel.
+                </p>
+                <div className="hero-actions">
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={openAddModal}
+                  >
+                    Add a Job
+                  </button>
+                  <button type="button" className="btn btn-secondary">
+                    Analyze a JD
+                  </button>
+                </div>
+              </div>
+            </section>
 
-        <section className="section">
-          <div className="section-inner">
-            <h2>Dashboard Preview</h2>
-            <div className="stat-grid">
-              <article className="card">
-                <p className="card-label">Applications</p>
-                <p className="card-value">{counts.applications}</p>
-              </article>
-              <article className="card">
-                <p className="card-label">Interviews</p>
-                <p className="card-value">{counts.interview}</p>
-              </article>
-              <article className="card">
-                <p className="card-label">Interview Rate</p>
-                <p className="card-value">{interviewRate}%</p>
-              </article>
-              <article className="card">
-                <p className="card-label">Offers</p>
-                <p className="card-value">{counts.offer}</p>
-              </article>
-            </div>
-          </div>
-        </section>
+            <section className="section">
+              <div className="section-inner">
+                <h2>Dashboard Preview</h2>
+                <div className="stat-grid">
+                  <article className="card">
+                    <p className="card-label">Applications</p>
+                    <p className="card-value">{counts.applications}</p>
+                  </article>
+                  <article className="card">
+                    <p className="card-label">Interviews</p>
+                    <p className="card-value">{counts.interview}</p>
+                  </article>
+                  <article className="card">
+                    <p className="card-label">Interview Rate</p>
+                    <p className="card-value">{interviewRate}%</p>
+                  </article>
+                  <article className="card">
+                    <p className="card-label">Offers</p>
+                    <p className="card-value">{counts.offer}</p>
+                  </article>
+                </div>
+              </div>
+            </section>
 
-        <section className="section">
-          <div className="section-inner">
-            <h2>Job Search Funnel</h2>
-            <div className="funnel">
-              <article className="funnel-step">
-                <p className="card-label">Applied</p>
-                <p className="card-value">{counts.applications}</p>
-              </article>
-              <article className="funnel-step">
-                <p className="card-label">Screening</p>
-                <p className="card-value">{counts.screening}</p>
-              </article>
-              <article className="funnel-step">
-                <p className="card-label">Interview</p>
-                <p className="card-value">{counts.interview}</p>
-              </article>
-              <article className="funnel-step">
-                <p className="card-label">Final Round</p>
-                <p className="card-value">{counts.finalRound}</p>
-              </article>
-              <article className="funnel-step">
-                <p className="card-label">Offer</p>
-                <p className="card-value">{counts.offer}</p>
-              </article>
-            </div>
-          </div>
-        </section>
+            <section className="section">
+              <div className="section-inner">
+                <h2>Job Search Funnel</h2>
+                <div className="funnel">
+                  <article className="funnel-step">
+                    <p className="card-label">Applied</p>
+                    <p className="card-value">{counts.applications}</p>
+                  </article>
+                  <article className="funnel-step">
+                    <p className="card-label">Screening</p>
+                    <p className="card-value">{counts.screening}</p>
+                  </article>
+                  <article className="funnel-step">
+                    <p className="card-label">Interview</p>
+                    <p className="card-value">{counts.interview}</p>
+                  </article>
+                  <article className="funnel-step">
+                    <p className="card-label">Final Round</p>
+                    <p className="card-value">{counts.finalRound}</p>
+                  </article>
+                  <article className="funnel-step">
+                    <p className="card-label">Offer</p>
+                    <p className="card-value">{counts.offer}</p>
+                  </article>
+                </div>
+              </div>
+            </section>
 
-        <section className="section section-last">
-          <div className="section-inner">
-            <h2>Recent Applications</h2>
-            <div className="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Company</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Source</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {jobs.map((job) => (
-                    <tr key={job.id}>
-                      <td>{job.company}</td>
-                      <td>{job.role}</td>
-                      <td>{job.status}</td>
-                      <td>{job.source}</td>
+            <section className="section section-last">
+              <div className="section-inner">
+                <h2>Recent Applications</h2>
+                <div className="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Company</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Source</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {jobs.map((job) => (
+                        <tr key={job.id}>
+                          <td>{job.company}</td>
+                          <td>{job.role}</td>
+                          <td>{job.status}</td>
+                          <td>{job.source}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </>
+        ) : (
+          <section className="jobs-page">
+            <div className="section-inner">
+              <div className="jobs-header">
+                <div>
+                  <h1>Job Tracker</h1>
+                  <p>Manage all your job applications in one place.</p>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={openAddModal}
+                >
+                  Add a Job
+                </button>
+              </div>
+
+              <div className="table-wrap jobs-table-wrap">
+                <table className="jobs-table">
+                  <thead>
+                    <tr>
+                      <th>Company</th>
+                      <th>Role</th>
+                      <th>Status</th>
+                      <th>Source</th>
+                      <th>Application Date</th>
+                      <th>Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {jobs.map((job) => (
+                      <tr key={job.id}>
+                        <td>{job.company}</td>
+                        <td>{job.role}</td>
+                        <td>
+                          <span
+                            className={`status-badge status-${job.status
+                              .toLowerCase()
+                              .replaceAll(' ', '-')}`}
+                          >
+                            {job.status}
+                          </span>
+                        </td>
+                        <td>{job.source}</td>
+                        <td>{job.date || '—'}</td>
+                        <td>
+                          <div className="row-actions">
+                            <button
+                              type="button"
+                              className="action-btn"
+                              onClick={() => openEditModal(job)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              className="action-btn action-delete"
+                              onClick={() => setJobToDelete(job)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
       </main>
 
       {isModalOpen ? (
@@ -325,10 +499,12 @@ function App() {
             className="modal"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="add-job-title"
+            aria-labelledby="job-form-title"
           >
-            <h2 id="add-job-title">Add a Job</h2>
-            <form onSubmit={saveJob}>
+            <h2 id="job-form-title">
+              {editingJobId !== null ? 'Edit Job' : 'Add a Job'}
+            </h2>
+            <form onSubmit={submitJob}>
               <label className="field">
                 Company
                 <input
@@ -358,12 +534,9 @@ function App() {
                   value={form.status}
                   onChange={updateField}
                 >
-                  <option>Applied</option>
-                  <option>Screening</option>
-                  <option>Interview</option>
-                  <option>Final Round</option>
-                  <option>Offer</option>
-                  <option>Rejected</option>
+                  {STATUS_OPTIONS.map((status) => (
+                    <option key={status}>{status}</option>
+                  ))}
                 </select>
               </label>
 
@@ -374,12 +547,9 @@ function App() {
                   value={form.source}
                   onChange={updateField}
                 >
-                  <option>Official Website</option>
-                  <option>Campus</option>
-                  <option>Boss</option>
-                  <option>LinkedIn</option>
-                  <option>Referral</option>
-                  <option>Other</option>
+                  {SOURCE_OPTIONS.map((source) => (
+                    <option key={source}>{source}</option>
+                  ))}
                 </select>
               </label>
 
@@ -415,10 +585,42 @@ function App() {
                   Cancel
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  Save Job
+                  {editingJobId !== null ? 'Save Changes' : 'Save Job'}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      ) : null}
+
+      {jobToDelete ? (
+        <div className="modal-backdrop">
+          <div
+            className="modal modal-confirm"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-job-title"
+          >
+            <h2 id="delete-job-title">Delete this application?</h2>
+            <p>
+              {jobToDelete.company} — {jobToDelete.role}
+            </p>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setJobToDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={deleteJob}
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
