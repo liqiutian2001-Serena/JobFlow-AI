@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
+
+const STORAGE_KEY = 'jobflow-data'
 
 const INITIAL_JOBS = [
   {
@@ -32,6 +34,27 @@ const INITIAL_JOBS = [
   },
 ]
 
+const INITIAL_COUNTS = {
+  applications: 24,
+  screening: 12,
+  interview: 6,
+  finalRound: 2,
+  offer: 1,
+}
+
+const INITIAL_DATA = {
+  jobs: INITIAL_JOBS,
+  counts: INITIAL_COUNTS,
+}
+
+const COUNT_KEYS = [
+  'applications',
+  'screening',
+  'interview',
+  'finalRound',
+  'offer',
+]
+
 const EMPTY_FORM = {
   company: '',
   role: '',
@@ -39,6 +62,47 @@ const EMPTY_FORM = {
   source: 'Official Website',
   date: '',
   jobDescription: '',
+}
+
+function loadJobFlowData() {
+  try {
+    const savedData = localStorage.getItem(STORAGE_KEY)
+
+    if (!savedData) {
+      return INITIAL_DATA
+    }
+
+    const parsedData = JSON.parse(savedData)
+    const hasValidJobs =
+      Array.isArray(parsedData.jobs) &&
+      parsedData.jobs.every(
+        (job) =>
+          job &&
+          (typeof job.id === 'number' || typeof job.id === 'string') &&
+          typeof job.company === 'string' &&
+          typeof job.role === 'string' &&
+          typeof job.status === 'string' &&
+          typeof job.source === 'string',
+      )
+    const hasValidCounts =
+      parsedData.counts &&
+      COUNT_KEYS.every(
+        (key) =>
+          Number.isInteger(parsedData.counts[key]) &&
+          parsedData.counts[key] >= 0,
+      )
+
+    if (!hasValidJobs || !hasValidCounts) {
+      return INITIAL_DATA
+    }
+
+    return {
+      jobs: parsedData.jobs,
+      counts: parsedData.counts,
+    }
+  } catch {
+    return INITIAL_DATA
+  }
 }
 
 function nextCounts(counts, status) {
@@ -73,17 +137,19 @@ function nextCounts(counts, status) {
 }
 
 function App() {
-  const [jobs, setJobs] = useState(INITIAL_JOBS)
-  const [counts, setCounts] = useState({
-    applications: 24,
-    screening: 12,
-    interview: 6,
-    finalRound: 2,
-    offer: 1,
-  })
+  const [data, setData] = useState(loadJobFlowData)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState('')
+  const { jobs, counts } = data
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    } catch {
+      // Keep the page usable if browser storage is unavailable.
+    }
+  }, [data])
 
   const interviewRate = Math.round(
     (counts.interview / counts.applications) * 100,
@@ -127,8 +193,10 @@ function App() {
       jobDescription: form.jobDescription,
     }
 
-    setJobs((current) => [newJob, ...current])
-    setCounts((current) => nextCounts(current, form.status))
+    setData((current) => ({
+      jobs: [newJob, ...current.jobs],
+      counts: nextCounts(current.counts, form.status),
+    }))
     closeModal()
   }
 
