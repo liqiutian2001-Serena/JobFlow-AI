@@ -128,6 +128,54 @@ function normalizeAnalysis(value) {
   }
 }
 
+function sanitizeLogValue(value) {
+  let safeValue = value == null ? 'not available' : String(value)
+  const apiKey = process.env.OPENAI_API_KEY
+
+  if (apiKey) {
+    safeValue = safeValue.split(apiKey).join('[REDACTED]')
+  }
+
+  return safeValue
+    .replace(/\bsk-[a-z0-9_-]{10,}\b/gi, '[REDACTED]')
+    .replace(/\bbearer\s+[^\s,;]+/gi, 'Bearer [REDACTED]')
+    .replace(
+      /\bauthorization\s*[:=]\s*[^\s,;]+/gi,
+      'Authorization: [REDACTED]',
+    )
+    .replace(/[\r\n]+/g, ' ')
+    .slice(0, 2000)
+}
+
+function logOpenAIError(error) {
+  const sdkError = error && typeof error === 'object' ? error : {}
+  const nestedError =
+    sdkError.error && typeof sdkError.error === 'object'
+      ? sdkError.error
+      : {}
+  const responseError =
+    sdkError.response?.data?.error &&
+    typeof sdkError.response.data.error === 'object'
+      ? sdkError.response.data.error
+      : {}
+
+  const details = {
+    name: sdkError.name ?? sdkError.constructor?.name,
+    status: sdkError.status ?? sdkError.statusCode ?? sdkError.response?.status,
+    code: sdkError.code ?? nestedError.code ?? responseError.code,
+    type: sdkError.type ?? nestedError.type ?? responseError.type,
+    message:
+      sdkError.message ?? nestedError.message ?? responseError.message ?? error,
+  }
+
+  console.error('OpenAI API request failed:')
+  console.error(`  name: ${sanitizeLogValue(details.name)}`)
+  console.error(`  status: ${sanitizeLogValue(details.status)}`)
+  console.error(`  code: ${sanitizeLogValue(details.code)}`)
+  console.error(`  type: ${sanitizeLogValue(details.type)}`)
+  console.error(`  message: ${sanitizeLogValue(details.message)}`)
+}
+
 async function analyzeJobDescription(jd) {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
   const response = await openai.responses.create({
@@ -188,6 +236,8 @@ const server = createServer(async (request, response) => {
       return
     }
 
+    logOpenAIError(error)
+
     if (error instanceof SyntaxError || error.message === 'Invalid AI response.' || error.message === 'Empty AI response.') {
       sendJson(response, 502, {
         code: 'AI_RESPONSE_INVALID',
@@ -196,7 +246,6 @@ const server = createServer(async (request, response) => {
       return
     }
 
-    console.error('JD analysis request failed.')
     sendJson(response, 502, { error: 'AI analysis failed. Please try again.' })
   }
 })
