@@ -1,26 +1,68 @@
 # JobFlow AI
 
-React + Vite 本地求职工具，使用 Node.js 原生 HTTP 后端。Job Tracker 保存在浏览器 localStorage（jobflow-data），不需要数据库。
+An AI-ready job search workspace that helps candidates track applications, understand job descriptions, match their resume to roles, and prepare for interviews.
 
-## 本地启动
+**Current stage:** a local-first portfolio project with working Basic Analysis and an AI-ready backend. AI is disabled by default. No account or API key is needed to explore the Basic workflow.
 
-使用支持 --env-file-if-exists 的 Node.js（本次验证为 Node 24）。
+## Why I built this
 
-```sh
-npm run server
-```
+Job searching often means applications scattered across platforms, repetitive JD analysis, repeated resume comparison, fragmented interview preparation, and little visibility into the job search funnel. I built JobFlow AI to connect these tasks in one workspace and reduce repeated copying and context switching.
 
-另一个终端：
+## Core Workflow
 
-```sh
-npm run dev
-```
+**Save Resume → Track Jobs → Open Job → Analyze JD → Match Resume → Prepare Interview**
 
-后端监听 127.0.0.1:8787；Vite 将 /api 转发给后端。打开 Vite 输出的地址。
+Save your experience in **My Resume**, then add a job with its description. Open the job to review its details and move into any analysis module. The saved JD is filled in automatically; Resume Match and Interview Prep also load your saved resume. Analysis starts only when you click its action button.
 
-## 环境变量
+Opening an analysis module directly from the navigation starts with an empty JD, without carrying over another job's context.
 
-.env.example 仅包含空 Key 和安全默认值。将配置放入被 Git 忽略的 .env.local，保留已有 Key，勿公开此文件。
+## Features
+
+### Job Tracker
+
+- Add, edit and delete applications, with status management.
+- Save company, role, source, application date and job description.
+- Open Job Detail to review a role and access its analysis workflow.
+- Persist jobs in local storage across browser refreshes.
+- Start with four labeled sample applications: ByteDance, JD.com, Meitu and Pinduoduo. These are demonstration records, not claims about actual applications or employers.
+
+### Dashboard
+
+Applications, screening, interviews, final rounds, offers and interview rate are derived dynamically from the same jobs array displayed in Job Tracker. No separate counters are maintained.
+
+The funnel is cumulative according to the **current status**, not a history of past stages:
+
+| Metric | Included statuses |
+| --- | --- |
+| Applications | All jobs, including Rejected |
+| Screening | Screening, Interview, Final Round, Offer |
+| Interviews | Interview, Final Round, Offer |
+| Final rounds | Final Round, Offer |
+| Offers | Offer |
+
+Interview rate is interviews divided by applications, rounded to a whole percentage; an empty list displays 0%. The four initial sample jobs produce **4 applications, 2 screening, 1 interview, 0 final rounds, 0 offers and a 25% interview rate**.
+
+### JD Analyzer
+
+Basic keyword analysis currently works without an API. It identifies responsibilities, skills, keywords and interview focus using local rules. An AI-ready backend is prepared for structured analysis when enabled.
+
+### Resume Match
+
+Compare a JD with the user's real resume to identify matched skills, missing evidence, strengths and preparation risks. **The product does not invent missing experience.** Suggestions should only be used when they reflect experience the candidate genuinely has.
+
+Basic matching detects words rather than verifying proficiency. It can miss context and negation; a missing keyword is not proof that a candidate lacks a skill. Results need human review. Match levels use Low, Medium or High rather than a misleading precise percentage.
+
+### Interview Prep
+
+Generate targeted Basic preparation from JD and resume topics, including role questions, resume questions, behavioral prompts, risks and preparation points. Local rules cover product management, data, research, growth, AI, SQL, collaboration, product metrics, e-commerce and operations.
+
+### My Resume
+
+Save resume or experience text once and reuse it in Resume Match and Interview Prep. Temporary edits in an analysis page do not overwrite the saved resume. Clearing the saved resume requires confirmation.
+
+## AI-ready Architecture
+
+The default configuration is:
 
 ```dotenv
 OPENAI_API_KEY=
@@ -28,58 +70,106 @@ AI_ENABLED=false
 OPENAI_MODEL=gpt-5.6-luna
 ```
 
-只有 AI_ENABLED 严格等于 true 且服务端存在非空 Key 时才允许请求 OpenAI。其他情况下三个页面默认使用本地 Basic Analysis。即使浏览器直接请求 AI endpoint，后端也会拒绝，不创建 OpenAI 客户端。
+With `AI_ENABLED=false`, the server blocks AI requests before constructing an OpenAI client. **No paid OpenAI requests are sent in this mode.** Basic analysis runs locally in the browser.
 
-OPENAI_MODEL 的默认值为 gpt-5.6-luna，业务函数不单独指定模型。系统终端中已经设置的环境变量会优先于 .env.local；如果修改文件后状态不变，请检查终端是否有同名变量。
+| Endpoint | Purpose |
+| --- | --- |
+| `POST /api/analyze-jd` | Analyze the supplied JD |
+| `POST /api/match-resume` | Compare the JD and resume |
+| `POST /api/interview-prep` | Prepare questions from the JD and resume |
+| `GET /api/ai-status` | Report enabled, configured and model, without exposing credentials |
 
-## 以后充值后开启 AI
+The native Node.js HTTP server uses the OpenAI Responses API and shared structured response schemas. The model is configured in one place through `OPENAI_MODEL`. Both the server and browser validate results. Frontend requests are centralized in `src/services/aiService.js`.
 
-1. 打开 .env.local，将 AI_ENABLED 改为 true。
-2. 确认 OPENAI_API_KEY 已填写有效的真实 Key（只在本地填写）。
-3. 可选设置 OPENAI_MODEL=gpt-5.6-luna，或账户可用的兼容 Responses / Structured Outputs 的模型。
-4. 停止旧后端，重新运行 npm run server。
-5. 运行 npm run dev，刷新浏览器页面。
-6. 确认页面显示 AI Analysis Mode，再点击分析按钮。
+If an AI request fails or returns invalid output, the page offers **Use Basic Analysis**. Neither the SDK nor the browser automatically retries analysis requests. A configured key indicates presence only; it does not verify validity, quota or model access.
 
-无需重新开发三个分析模块。实际成功仍取决于账户额度、模型访问权限和网络；本阶段没有进行任何真实付费 API 验证。
+When API access and quota are available, set `AI_ENABLED=true` in the local environment file, provide a valid key, optionally change the model, restart the server and refresh the page. Both the switch and key must be present to use AI. Live paid calls have not been validated in this project stage.
 
-## 接口
+## Tech Stack
 
-| 方法和路径 | 输入 | 用途 |
-| --- | --- | --- |
-| GET /api/ai-status | 无 | 返回 enabled、configured、model；configured 只表示 Key 是否存在，不代表额度或 Key 有效性 |
-| POST /api/analyze-jd | jd | 提取 JD 职责、技能、关键词、加分项、面试重点和岗位侧重 |
-| POST /api/match-resume | jd、resume | 对比真实简历与 JD，输出匹配等级、缺失技能、优势、改进建议和风险 |
-| POST /api/interview-prep | jd、resume | 根据岗位和候选人经历生成七类面试准备内容 |
+- React and Vite
+- JavaScript and CSS
+- Node.js native HTTP server
+- OpenAI SDK
+- Browser localStorage
+- Git / GitHub for version control and portfolio presentation
 
-旧的 GET /api/status 作为兼容入口保留。关闭时 POST 返回 503 / AI_DISABLED。接口只返回通用错误，不输出 Key、SDK 错误详情或用户原文日志。
+No router, UI library, database or authentication service is required for the current local workflow.
 
-真实 AI 使用 Responses API、严格 JSON Schema 和服务端/前端结构验证。提示词要求仅依据输入，不编造经历、技能、公司或数字，不制造精确匹配百分比。参考 [OpenAI Structured Outputs 文档](https://developers.openai.com/api/docs/guides/structured-outputs)。
+## Data Architecture
 
-## Basic 和失败回退
+**jobs = single source of truth.** Dashboard statistics are derived from jobs on render.
 
-- Basic 分析在浏览器运行，保留原 JD / Resume 规则，并补齐 Interview Prep 的主题规则。
-- 状态接口不可用时，页面仍可使用 Basic。
-- AI 超时、网络错误、额度不足、拒绝回答、无效 JSON 或结构错误都会显示统一提示和 Use Basic Analysis。
-- SDK 禁用自动重试；页面也不自动重试。只有用户再次点击才会发起新的分析。
-- 每份结果显示实际来源，Basic 结果不会标记为 AI 结果。关键词规则可能忽略语境或否定词，需要对照原文检查。
+| Storage key | Contents |
+| --- | --- |
+| `jobflow-data` | `{ jobs: [...] }` — saved applications |
+| `jobflow-resume` | Saved resume / experience text |
 
-## 文件组织
+Older stored data containing separate counters is supported: valid job records are preserved, old counters are ignored, and the next save writes only jobs. Resume data remains separate. Navigation and the selected job ID are temporary React state.
 
-- server.mjs：环境变量、原生 HTTP 路由、提示词和 OpenAI SDK。
-- src/services/aiService.js：统一前端请求、超时和错误处理。
-- src/services/aiContracts.js：三个结果的 JSON Schema 和验证。
-- src/services/basicAnalysis.js：从原 App.jsx 移出的本地分析和样例。
-- src/services/basicResults.js：统一 Basic 结果结构、补充面试规则。
-- src/components/AnalysisPage.jsx：三个分析页面的输入、状态、结果和回退。
-- src/App.jsx：导航、Dashboard 和原有 Job Tracker 业务。
+## Privacy
 
-## 检查
+Job and resume data are currently stored in the user's browser using localStorage. There is no cloud synchronization. Clearing browser site data removes these records; different browsers and devices have separate storage.
+
+Saving a job or resume does not upload it. In the default Basic mode, analysis also stays in the browser. If AI is explicitly enabled later, clicking an AI analysis action sends the supplied JD and, where required, resume through the local backend to OpenAI. The backend requests `store: false`; this is not a claim that provider-side retention is eliminated.
+
+API credentials belong only in server-side configuration. `.env.local` is ignored by Git and `.env.example` contains no real key. Never put credentials in `src/`, a `VITE_` variable, screenshots or a public repository. Use fictional resume text when recording a portfolio demo.
+
+## Run Locally
+
+Use Node.js 24 (the tested runtime) and npm.
+
+```sh
+npm install
+```
+
+For the default Basic demo, no key or environment file is required. To configure the server, copy `.env.example` to `.env.local` only if that local file does not already exist. Keep `AI_ENABLED=false` for a demo without paid API calls.
+
+**Terminal 1:**
+
+```sh
+npm run server
+```
+
+**Terminal 2:**
+
+```sh
+npm run dev
+```
+
+Open the local address printed by Vite. The backend listens at `127.0.0.1:8787`; Vite forwards `/api` requests there. Basic features remain usable with AI disabled, including when the status service is unavailable.
+
+Environment variables already set in your terminal override `.env.local`. Restart the backend after changing its configuration.
+
+### A short portfolio demo
+
+1. Show Overview and explain that its numbers come from the four sample jobs.
+2. Save fictional experience in My Resume.
+3. Add a fictional job with a JD, or edit a sample job to include a JD; initial sample jobs have no saved JD.
+4. Open the job and demonstrate JD analysis, resume matching and interview preparation. Point out that these are Basic results.
+5. Change a job's status and return to Overview to show the automatically updated funnel.
+6. Refresh to demonstrate local persistence.
+
+### Validation
 
 ```sh
 npm run build
 npm run lint
+node --test tests/job-stats.test.mjs
 node --env-file-if-exists=.env.local --test tests/ai-disabled.test.mjs
 ```
 
-测试强制关闭 AI，验证三个 endpoint 不会进入 AI provider、Basic 分析和十个面试主题。已在隔离浏览器中验证 Dashboard、Jobs、三个 Basic 流程、空输入、Clear、localStorage 刷新一致性，以及拦截请求后的三个 AI 失败回退。真实后端全程关闭，未调用 OpenAI。
+The offline AI test forces AI off. Tests cover cumulative statistics and the disabled-provider gate. Browser checks cover the core workflow, CRUD, resume reuse, empty states and persistence. These checks do not establish live model quality or production hosting readiness.
+
+## Future Improvements
+
+These are possible future directions, **not implemented features**:
+
+- Cloud database
+- Authentication
+- Resume file parsing
+- Real AI analysis validation and activation
+- Cross-device synchronization
+- Application analytics
+
+The current application is designed for a local demo. Hosting the full AI workflow requires a server runtime, private environment configuration and appropriate API routing; publishing static frontend files alone does not host the Node.js API.

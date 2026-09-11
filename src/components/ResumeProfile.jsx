@@ -44,6 +44,7 @@ export default function ResumeProfile() {
           <p>Save your experience once and reuse it across JobFlow AI.</p>
         </header>
         <div className="resume-match-input-card">
+          {!resume.trim() && <p className="input-hint">Save your resume here to reuse it in Resume Match and Interview Prep.</p>}
           <label className="resume-match-field" htmlFor="profile-resume">Resume / Experience
             <textarea
               id="profile-resume"

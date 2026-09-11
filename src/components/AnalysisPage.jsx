@@ -51,7 +51,10 @@ export default function AnalysisPage({ kind, job = null, onBackToJob }) {
     if (busy) return
     resetResult()
     if (!jd.trim() || (needsResume && !resume.trim())) {
-      setError(needsResume ? 'Please paste a job description and your resume.' : 'Please paste a job description first.')
+      setError(!jd.trim() && needsResume && !resume.trim()
+        ? 'Please paste a job description and your resume or experience.'
+        : !jd.trim() ? 'Please paste a job description first.'
+          : 'Please paste your resume or experience first.')
       return
     }
     if (useBasic || !aiActive) {

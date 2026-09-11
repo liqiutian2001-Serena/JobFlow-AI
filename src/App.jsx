@@ -3,6 +3,8 @@ import './App.css'
 import AnalysisPage from './components/AnalysisPage'
 import JobDetail from './components/JobDetail'
 import ResumeProfile from './components/ResumeProfile'
+import StatusBadge from './components/StatusBadge'
+import EmptyJobs from './components/EmptyJobs'
 import { calculateJobStats } from './services/jobStats'
 
 const STORAGE_KEY = 'jobflow-data'
@@ -55,6 +57,11 @@ const INITIAL_JOBS = [
     source: 'Campus',
   },
 ]
+
+// Presentation-only identification of the original sample rows; never changes saved jobs.
+function isSampleJob(job) {
+  return INITIAL_JOBS.some((sample) => sample.id === job.id && sample.company === job.company && sample.role === job.role)
+}
 
 const EMPTY_FORM = {
   company: '',
@@ -270,10 +277,11 @@ function App() {
           <>
             <section className="hero">
               <div className="hero-inner">
-                <h1>Your AI Job Search Copilot</h1>
+                <p className="hero-eyebrow">JobFlow AI</p>
+                <h1>Your AI-ready job search workspace</h1>
                 <p className="subtitle">
-                  Track applications, analyze job descriptions, prepare for
-                  interviews, and understand your job search funnel.
+                  Track applications, understand job descriptions, match your resume,
+                  and prepare for interviews in one workflow.
                 </p>
                 <div className="hero-actions">
                   <button
@@ -296,7 +304,7 @@ function App() {
 
             <section className="section">
               <div className="section-inner">
-                <h2>Dashboard Preview</h2>
+                <h2>Overview</h2>
                 <div className="stat-grid">
                   <article className="card">
                     <p className="card-label">Applications</p>
@@ -323,7 +331,7 @@ function App() {
                 <h2>Job Search Funnel</h2>
                 <div className="funnel">
                   <article className="funnel-step">
-                    <p className="card-label">Applied</p>
+                    <p className="card-label">Applications</p>
                     <p className="card-value">{stats.applications}</p>
                   </article>
                   <article className="funnel-step">
@@ -349,7 +357,8 @@ function App() {
             <section className="section section-last">
               <div className="section-inner">
                 <h2>Recent Applications</h2>
-                <div className="table-wrap">
+                {jobs.some(isSampleJob) && <p className="sample-note">Sample applications are labeled below. Add your own jobs to build your workspace.</p>}
+                {jobs.length === 0 ? <EmptyJobs onAdd={openAddModal} /> : <div className="table-wrap">
                   <table>
                     <thead>
                       <tr>
@@ -362,15 +371,15 @@ function App() {
                     <tbody>
                       {jobs.map((job) => (
                         <tr key={job.id}>
-                          <td>{job.company}</td>
+                          <td>{job.company}{isSampleJob(job) && <span className="sample-tag">Sample</span>}</td>
                           <td>{job.role}</td>
-                          <td>{job.status}</td>
+                          <td><StatusBadge status={job.status} /></td>
                           <td>{job.source}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </div>}
               </div>
             </section>
           </>
@@ -391,7 +400,8 @@ function App() {
                 </button>
               </div>
 
-              <div className="table-wrap jobs-table-wrap">
+              {jobs.some(isSampleJob) && <p className="sample-note">Sample applications are labeled below. Add your own jobs to build your workspace.</p>}
+              {jobs.length === 0 ? <EmptyJobs onAdd={openAddModal} /> : <div className="table-wrap jobs-table-wrap">
                 <table className="jobs-table">
                   <thead>
                     <tr>
@@ -406,16 +416,10 @@ function App() {
                   <tbody>
                     {jobs.map((job) => (
                       <tr key={job.id}>
-                        <td>{job.company}</td>
+                        <td>{job.company}{isSampleJob(job) && <span className="sample-tag">Sample</span>}</td>
                         <td>{job.role}</td>
                         <td>
-                          <span
-                            className={`status-badge status-${job.status
-                              .toLowerCase()
-                              .replaceAll(' ', '-')}`}
-                          >
-                            {job.status}
-                          </span>
+                          <StatusBadge status={job.status} />
                         </td>
                         <td>{job.source}</td>
                         <td>{job.date || '—'}</td>
@@ -448,7 +452,7 @@ function App() {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </div>}
             </div>
           </section>
         ) : activeView === 'my-resume' ? (

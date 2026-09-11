@@ -1,3 +1,5 @@
+import StatusBadge from './StatusBadge'
+
 export default function JobDetail({ job, onBack, onEdit, onAnalyze }) {
   return (
     <section className="jobs-page">
@@ -9,7 +11,7 @@ export default function JobDetail({ job, onBack, onEdit, onAnalyze }) {
             <p>{job.role}</p>
           </header>
           <dl className="job-detail-meta">
-            <div><dt>Status</dt><dd>{job.status}</dd></div>
+            <div><dt>Status</dt><dd><StatusBadge status={job.status} /></dd></div>
             <div><dt>Source</dt><dd>{job.source}</dd></div>
             <div><dt>Application Date</dt><dd>{job.date || '—'}</dd></div>
           </dl>
