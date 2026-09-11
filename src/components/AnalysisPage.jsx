@@ -11,9 +11,9 @@ const pages = {
 }
 const labels = {
   coreResponsibilities: 'Core Responsibilities', hardSkills: 'Hard Skills', softSkills: 'Soft Skills',
-  keywords: 'Keywords', niceToHave: 'Nice to Have', interviewFocus: 'Interview Focus', jdFocus: 'JD Focus',
+  keywords: 'Key JD Keywords', niceToHave: 'Nice to Have', interviewFocus: 'Interview Focus', jdFocus: 'JD Focus',
   matchSummary: 'Match Summary', matchLevel: 'Match Level', matchedSkills: 'Matched Skills', missingSkills: 'Missing Skills',
-  resumeStrengths: 'Resume Strengths', improvementSuggestions: 'Improvement Suggestions', interviewRiskAreas: 'Interview Risk Areas', keywordsToEmphasize: 'Keywords to Emphasize',
+  resumeStrengths: 'Resume Strengths', improvementSuggestions: 'Resume Improvement Suggestions', interviewRiskAreas: 'Interview Risk Areas', keywordsToEmphasize: 'Resume Keywords to Emphasize',
   highProbabilityQuestions: 'High Probability Questions', resumeQuestions: 'Resume Questions', jdQuestions: 'JD Questions',
   behavioralQuestions: 'Behavioral Questions', productQuestions: 'Product Questions', riskAreas: 'Risk Areas', preparationPoints: 'Preparation Points',
 }
@@ -98,7 +98,7 @@ export default function AnalysisPage({ kind, job = null, onBackToJob }) {
           </p>}
           {savedResume.error && <p className="resume-match-error" role="alert">{savedResume.error} You can still enter it manually.</p>}
           <div className={needsResume ? 'resume-match-inputs' : ''}>
-            <label className="resume-match-field" htmlFor="analysis-jd">Job Description
+            <label className="resume-match-field" htmlFor="analysis-jd">{needsResume ? 'Job Description' : 'Paste Job Description'}
               <textarea id="analysis-jd" disabled={busy} value={jd} onChange={(event) => { setJD(event.target.value); resetResult() }} placeholder="Paste the full job description here..." />
             </label>
             {needsResume && <label className="resume-match-field" htmlFor="analysis-resume">Resume / Experience
@@ -107,7 +107,7 @@ export default function AnalysisPage({ kind, job = null, onBackToJob }) {
           </div>
           <div className="resume-match-actions">
             <button className="btn btn-primary" disabled={busy} onClick={() => analyze()}>{busy ? 'Analyzing...' : page.button}</button>
-            <button className="btn btn-secondary" disabled={busy} onClick={() => { setJD(needsResume ? RESUME_MATCH_SAMPLE_JD : SAMPLE_JD); setResume(needsResume ? RESUME_MATCH_SAMPLE_RESUME : ''); resetResult() }}>Load Sample</button>
+            <button className="btn btn-secondary" disabled={busy} onClick={() => { setJD(needsResume ? RESUME_MATCH_SAMPLE_JD : SAMPLE_JD); setResume(needsResume ? RESUME_MATCH_SAMPLE_RESUME : ''); resetResult() }}>{needsResume ? 'Load Sample' : 'Load Sample JD'}</button>
             <button className="btn btn-plain" disabled={busy} onClick={() => { setJD(''); setResume(''); resetResult() }}>Clear</button>
           </div>
           {error && <p className="resume-match-error" role="alert">{error}</p>}
@@ -116,9 +116,9 @@ export default function AnalysisPage({ kind, job = null, onBackToJob }) {
         {result && <div className="resume-match-results" aria-live="polite">
           <p><strong>{resultMode} Analysis Result</strong></p>
           <div className="match-results-grid">
-            {Object.entries(result).map(([key, value]) => <article className="match-result-card" key={key}>
+            {Object.entries(result).map(([key, value]) => <article className={`match-result-card result-${key}`} key={key}>
               <h2>{labels[key]}</h2>
-              {Array.isArray(value) ? value.length ? <ul>{value.map((item, index) => <li key={index}>{item}</li>)}</ul> : <p>No supporting evidence detected.</p>
+              {Array.isArray(value) ? value.length ? <ul className={['hardSkills', 'softSkills', 'keywords', 'matchedSkills', 'missingSkills', 'keywordsToEmphasize'].includes(key) ? 'result-tags' : undefined}>{value.map((item, index) => <li key={index}>{item}</li>)}</ul> : <p>No supporting evidence detected.</p>
                 : typeof value === 'object' ? <ul>{Object.entries(value).map(([name, level]) => <li key={name}>{name === 'ai' ? 'AI' : name.charAt(0).toUpperCase() + name.slice(1)}: {level}</li>)}</ul>
                   : <p>{value}</p>}
             </article>)}

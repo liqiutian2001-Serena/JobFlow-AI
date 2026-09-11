@@ -278,6 +278,7 @@ function App() {
             <section className="hero">
               <div className="hero-inner">
                 <p className="hero-eyebrow">JobFlow AI</p>
+                <p className="hero-positioning" lang="zh-CN">面向校招 / 秋招求职者的 AI-ready 求职工作台</p>
                 <h1>Your AI-ready job search workspace</h1>
                 <p className="subtitle">
                   Track applications, understand job descriptions, match your resume,
@@ -357,7 +358,7 @@ function App() {
             <section className="section section-last">
               <div className="section-inner">
                 <h2>Recent Applications</h2>
-                {jobs.some(isSampleJob) && <p className="sample-note">Sample applications are labeled below. Add your own jobs to build your workspace.</p>}
+                {jobs.some(isSampleJob) && <p className="sample-note">Demo applications · Includes sample roles for exploring the workflow.</p>}
                 {jobs.length === 0 ? <EmptyJobs onAdd={openAddModal} /> : <div className="table-wrap">
                   <table>
                     <thead>
@@ -371,7 +372,7 @@ function App() {
                     <tbody>
                       {jobs.map((job) => (
                         <tr key={job.id}>
-                          <td>{job.company}{isSampleJob(job) && <span className="sample-tag">Sample</span>}</td>
+                          <td>{job.company}</td>
                           <td>{job.role}</td>
                           <td><StatusBadge status={job.status} /></td>
                           <td>{job.source}</td>
@@ -400,7 +401,7 @@ function App() {
                 </button>
               </div>
 
-              {jobs.some(isSampleJob) && <p className="sample-note">Sample applications are labeled below. Add your own jobs to build your workspace.</p>}
+              {jobs.some(isSampleJob) && <p className="sample-note">Demo applications · Includes sample roles for exploring the workflow.</p>}
               {jobs.length === 0 ? <EmptyJobs onAdd={openAddModal} /> : <div className="table-wrap jobs-table-wrap">
                 <table className="jobs-table">
                   <thead>
@@ -416,7 +417,7 @@ function App() {
                   <tbody>
                     {jobs.map((job) => (
                       <tr key={job.id}>
-                        <td>{job.company}{isSampleJob(job) && <span className="sample-tag">Sample</span>}</td>
+                        <td>{job.company}</td>
                         <td>{job.role}</td>
                         <td>
                           <StatusBadge status={job.status} />

@@ -1,8 +1,10 @@
 # JobFlow AI
 
-Live Demo: [https://job-flow-ai-kappa.vercel.app](https://job-flow-ai-kappa.vercel.app)
+JobFlow AI 是一个面向校招 / 秋招求职者的 AI-ready 求职工作台，用于岗位管理、JD 分析、简历匹配与面试准备。
 
 An AI-ready job search workspace that helps candidates track applications, understand job descriptions, match their resume to roles, and prepare for interviews.
+
+Live Demo: [https://job-flow-ai-kappa.vercel.app](https://job-flow-ai-kappa.vercel.app)
 
 ## Live Demo
 
@@ -34,7 +36,7 @@ Opening an analysis module directly from the navigation starts with an empty JD,
 - Save company, role, source, application date and job description.
 - Open Job Detail to review a role and access its analysis workflow.
 - Persist jobs in local storage across browser refreshes.
-- Start with four labeled sample applications: ByteDance, JD.com, Meitu and Pinduoduo. These are demonstration records, not claims about actual applications or employers.
+- Start with four sample applications: ByteDance, JD.com, Meitu and Pinduoduo. These are demonstration records, not claims about actual applications or employers.
 
 ### Dashboard
 

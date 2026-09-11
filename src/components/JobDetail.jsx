@@ -9,9 +9,9 @@ export default function JobDetail({ job, onBack, onEdit, onAnalyze }) {
           <header className="job-detail-heading">
             <h1>{job.company}</h1>
             <p>{job.role}</p>
+            <StatusBadge status={job.status} />
           </header>
           <dl className="job-detail-meta">
-            <div><dt>Status</dt><dd><StatusBadge status={job.status} /></dd></div>
             <div><dt>Source</dt><dd>{job.source}</dd></div>
             <div><dt>Application Date</dt><dd>{job.date || '—'}</dd></div>
           </dl>

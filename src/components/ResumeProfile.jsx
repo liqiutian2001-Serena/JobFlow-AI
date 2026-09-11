@@ -56,7 +56,7 @@ export default function ResumeProfile() {
           </label>
           <div className="resume-match-actions">
             <button type="button" className="btn btn-primary" onClick={saveResume}>Save Resume</button>
-            <button type="button" className="btn btn-secondary" onClick={() => setConfirmClear(true)}>Clear</button>
+            <button type="button" className="btn btn-plain action-delete" onClick={() => setConfirmClear(true)}>Clear</button>
           </div>
           {error && <p className="resume-match-error" role="alert">{error}</p>}
           {message && <p role="status">{message}</p>}
