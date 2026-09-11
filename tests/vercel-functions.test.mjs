@@ -25,7 +25,7 @@ test('four serverless exports fail closed and never use network', async () => {
     delete process.env.AI_ENABLED
     let res = response()
     await status({ method: 'GET' }, res)
-    assert.deepEqual(res.body, { enabled: false, configured: false, model: 'gpt-5.6-luna' })
+    assert.deepEqual(res.body, { enabled: false, configured: false, provider: 'openai', model: 'gpt-5.6-luna' })
     for (const enabled of [undefined, 'false', 'TRUE', '1', 'true']) {
       if (enabled === undefined) delete process.env.AI_ENABLED
       else process.env.AI_ENABLED = enabled
@@ -40,7 +40,7 @@ test('four serverless exports fail closed and never use network', async () => {
     process.env.OPENAI_API_KEY = 'offline-test-placeholder'
     process.env.OPENAI_MODEL = 'test-model'
     res = response(); await status({ method: 'GET' }, res)
-    assert.deepEqual(res.body, { enabled: false, configured: true, model: 'test-model' })
+    assert.deepEqual(res.body, { enabled: false, configured: true, provider: 'openai', model: 'test-model' })
     for (const handler of [jd, resume, prep]) {
       res = response(); await handler({ method: 'POST', body: {} }, res); assert.equal(res.body.code, 'AI_DISABLED')
       res = response(); await handler({ method: 'GET' }, res); assert.equal(res.code, 405)

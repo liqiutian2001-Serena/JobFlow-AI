@@ -14,7 +14,7 @@ import { SAMPLE_JD, RESUME_MATCH_SAMPLE_RESUME } from '../src/services/basicAnal
     const status = await (await fetch(base + '/api/ai-status')).json()
     assert.deepEqual(status, getAIConfig())
     assert.equal(status.enabled, false)
-    assert.deepEqual(Object.keys(status).sort(), ['configured', 'enabled', 'model'])
+    assert.deepEqual(Object.keys(status).sort(), ['configured', 'enabled', 'model', 'provider'])
     for (const task of ['analyze-jd', 'match-resume', 'interview-prep']) {
       const response = await fetch(base + '/api/' + task, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({jd:SAMPLE_JD,resume:RESUME_MATCH_SAMPLE_RESUME})})
       assert.equal(response.status, 503)

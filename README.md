@@ -65,9 +65,11 @@ Save resume or experience text once and reuse it in Resume Match and Interview P
 The default configuration is:
 
 ```dotenv
-OPENAI_API_KEY=
 AI_ENABLED=false
-OPENAI_MODEL=gpt-5.6-luna
+AI_PROVIDER=openai
+AI_API_KEY=
+AI_MODEL=gpt-5.6-luna
+AI_BASE_URL=
 ```
 
 With `AI_ENABLED=false`, the server blocks AI requests before constructing an OpenAI client. **No paid OpenAI requests are sent in this mode.** Basic analysis runs locally in the browser.
@@ -77,11 +79,11 @@ With `AI_ENABLED=false`, the server blocks AI requests before constructing an Op
 | `POST /api/analyze-jd` | Analyze the supplied JD |
 | `POST /api/match-resume` | Compare the JD and resume |
 | `POST /api/interview-prep` | Prepare questions from the JD and resume |
-| `GET /api/ai-status` | Report enabled, configured and model, without exposing credentials |
+| `GET /api/ai-status` | Report enabled, configured, provider and model, without exposing credentials |
 
-The local Node.js HTTP server and Vercel Functions share server/aiCore.js, which uses the OpenAI Responses API and shared structured response schemas. The model is configured in one place through `OPENAI_MODEL`. Both the server and browser validate results. Frontend requests are centralized in `src/services/aiService.js`.
+The local Node.js HTTP server and Vercel Functions share server/aiCore.js, which selects OpenAI Responses or DeepSeek Chat Completions JSON mode and validates shared response schemas. The model is configured in one place through `AI_MODEL`. Both the server and browser validate results. Frontend requests are centralized in `src/services/aiService.js`.
 
-If an AI request fails or returns invalid output, the page offers **Use Basic Analysis**. Neither the SDK nor the browser automatically retries analysis requests. A configured key indicates presence only; it does not verify validity, quota or model access.
+If an AI request fails or returns invalid output, the page offers **Use Basic Analysis**. Neither the SDK nor the browser automatically retries analysis requests. configured indicates complete local settings (supported provider, key, model and valid base URL), not credential validity, quota or model access.
 
 When API access and quota are available, set `AI_ENABLED=true` in the local environment file, provide a valid key, optionally change the model, restart the server and refresh the page. Both the switch and key must be present to use AI. Live paid calls have not been validated in this project stage.
 
@@ -111,7 +113,7 @@ Older stored data containing separate counters is supported: valid job records a
 
 Job and resume data are currently stored in the user's browser using localStorage. There is no cloud synchronization. Clearing browser site data removes these records; different browsers and devices have separate storage.
 
-Saving a job or resume does not upload it. In the default Basic mode, analysis also stays in the browser. If AI is explicitly enabled later, clicking an AI analysis action sends the supplied JD and, where required, resume through the local backend to OpenAI. The backend requests `store: false`; this is not a claim that provider-side retention is eliminated.
+Saving a job or resume does not upload it. In the default Basic mode, analysis also stays in the browser. If AI is explicitly enabled later, clicking an AI analysis action sends the supplied JD and, where required, resume through the backend to the configured provider. OpenAI requests use `store: false`; this is not a claim that provider-side retention is eliminated.
 
 API credentials belong only in server-side configuration. `.env.local` is ignored by Git and `.env.example` contains no real key. Never put credentials in `src/`, a `VITE_` variable, screenshots or a public repository. Use fictional resume text when recording a portfolio demo.
 
@@ -185,13 +187,25 @@ When you have API quota and want to enable real AI, set the following in **Verce
 | Variable | Value |
 | --- | --- |
 | AI_ENABLED | true |
-| OPENAI_API_KEY | Your secret API key, entered only in Vercel settings |
-| OPENAI_MODEL | gpt-5.6-luna (optional) |
+| AI_PROVIDER | openai or deepseek |
+| AI_BASE_URL | Leave empty for OpenAI official API; required for DeepSeek |
+| AI_API_KEY | Your secret API key, entered only in Vercel settings |
+| AI_MODEL | gpt-5.6-luna (optional) |
 
-Redeploy after changing variables, then refresh the site and check /api/ai-status. A missing key safely leaves Basic mode available even if AI_ENABLED=true. configured only indicates a nonempty key, not valid credentials or available quota. Real AI still depends on account access and network availability. These are server variables: never prefix them with VITE_ or put secrets into source/config files.
+Redeploy after changing variables, then refresh the site and check /api/ai-status. A missing key safely leaves Basic mode available even if AI_ENABLED=true. configured indicates complete local settings, not valid credentials or available quota. Real AI still depends on account access and network availability. These are server variables: never prefix them with VITE_ or put secrets into source/config files.
 
 Local development remains npm run server plus npm run dev with the existing Vite proxy. Browser data is origin-specific: localhost jobs and resumes will not automatically appear at the deployed URL.
 
 Validation: node --test tests/vercel-functions.test.mjs checks the four imported handlers offline, including disabled/missing-key gates, request parsing and safe fallback. It does not replace a deployment smoke test. After deployment, check all four /api paths with AI disabled before considering activation.
 
 References: [Vercel Node.js Functions](https://vercel.com/docs/functions/runtimes/node-js), [supported Node.js versions](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions), and [Vite on Vercel](https://vercel.com/docs/frameworks/frontend/vite).
+
+### Provider configuration
+
+All provider configuration stays on the server; frontend URLs and analysis results are unchanged. OpenAI is the default provider and uses gpt-5.6-luna when no model is set. An empty AI_BASE_URL uses the official OpenAI API endpoint.
+
+For DeepSeek, set AI_PROVIDER=deepseek and supply AI_API_KEY, AI_MODEL and AI_BASE_URL yourself. No DeepSeek model or URL is hardcoded. The selected endpoint/model must support Chat Completions JSON mode. Results are validated against the same schemas; invalid or incomplete responses keep the existing Basic fallback available. Other compatible services can use the matching protocol with a custom URL, but only the openai and deepseek provider identifiers are supported.
+
+Compatibility: an absent or blank AI_API_KEY falls back to OPENAI_API_KEY; an absent or blank AI_MODEL falls back to OPENAI_MODEL. Unified variables take priority. When switching providers, set both explicitly to avoid reusing old OpenAI credentials or model settings. Keep AI_ENABLED=false while configuring. Restart the local server, or redeploy after updating Vercel environment variables.
+
+No real model requests were made during provider integration testing. DeepSeek JSON mode reference: [official documentation](https://api-docs.deepseek.com/guides/json_mode/).
