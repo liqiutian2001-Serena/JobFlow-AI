@@ -119,6 +119,220 @@ Preferred:
 - Experience in growth, e-commerce or creator economy.
 - Basic SQL knowledge is a plus.`
 
+const RESUME_MATCH_SAMPLE_JD = `Product Manager - AI & Growth
+
+Responsibilities:
+
+- Define product requirements with engineering and design teams.
+- Analyze user behavior and business data to identify growth opportunities.
+- Conduct user research.
+- Manage product roadmap and prioritize features.
+- Work cross-functionally with engineering, design and operations.
+
+Requirements:
+
+- Product management or product operations experience.
+- Strong analytical and problem-solving skills.
+- Experience with data analysis and A/B testing.
+- Strong communication skills.
+- Experience with AI products is preferred.
+- SQL knowledge is a plus.
+- Experience in growth, e-commerce or creator economy is preferred.`
+
+const RESUME_MATCH_SAMPLE_RESUME = `Product Intern
+
+Experience:
+
+- Worked on creator marketing products.
+- Designed creator tags and improved creator search efficiency.
+- Participated in AI-powered creator recommendation features.
+- Analyzed product usage data and user behavior.
+- Collaborated with product, engineering and operations teams.
+- Conducted user research and collected business requirements.
+- Experience in e-commerce and creator economy.
+- Familiar with product metrics and conversion funnels.
+
+Skills:
+Product Management
+Product Operations
+Data Analysis
+User Research
+AI Products
+E-commerce
+Growth
+Cross-functional Collaboration`
+
+const RESUME_MATCH_SKILL_RULES = [
+  {
+    label: 'Product Management',
+    pattern: /product management|product manager|product requirements?/i,
+  },
+  { label: 'Product Operations', pattern: /product operations/i },
+  { label: 'AI', pattern: /\bai\b|ai-powered|artificial intelligence/i },
+  {
+    label: 'Large Language Models',
+    pattern: /large language models?|\bllms?\b/i,
+  },
+  {
+    label: 'Data Analysis',
+    pattern: /data analysis|business data|product usage data|analy[sz]ed? .*data/i,
+  },
+  { label: 'SQL', pattern: /\bsql\b/i },
+  { label: 'A/B Testing', pattern: /a\/b testing|\bab testing\b/i },
+  { label: 'User Research', pattern: /user research/i },
+  { label: 'Growth', pattern: /\bgrowth\b/i },
+  { label: 'E-commerce', pattern: /e-commerce|ecommerce/i },
+  { label: 'Creator Economy', pattern: /creator economy/i },
+  { label: 'Product Metrics', pattern: /product metrics?/i },
+  { label: 'Conversion Funnel', pattern: /conversion funnels?/i },
+  { label: 'Roadmap', pattern: /\broadmap\b/i },
+  { label: 'Analytics', pattern: /\banalytics\b/i },
+  { label: 'Experimentation', pattern: /experimentation|experiments?/i },
+  { label: 'Stakeholder Management', pattern: /stakeholder management/i },
+  {
+    label: 'Cross-functional Collaboration',
+    pattern:
+      /cross-functional|cross-functionally|collaborat(?:e|ed|ion).*engineering|work with engineering/i,
+  },
+  { label: 'Communication', pattern: /communication|communicat(?:e|ed|ing)/i },
+  { label: 'Problem Solving', pattern: /problem-solving|problem solving/i },
+  { label: 'Leadership', pattern: /leadership|team lead|led a team/i },
+  { label: 'Ownership', pattern: /\bownership\b|\bowned\b/i },
+]
+
+const INTERVIEW_FOCUS_RULES = [
+  {
+    skills: ['Product Management', 'Product Operations', 'Roadmap'],
+    value: 'Product Sense',
+  },
+  { skills: ['Data Analysis', 'SQL', 'Analytics'], value: 'Data Analysis' },
+  { skills: ['AI', 'Large Language Models'], value: 'AI Product Thinking' },
+  { skills: ['Growth', 'Conversion Funnel'], value: 'Growth' },
+  {
+    skills: ['Cross-functional Collaboration', 'Stakeholder Management'],
+    value: 'Cross-functional Collaboration',
+  },
+  { skills: ['User Research'], value: 'User Research' },
+]
+
+const LIKELY_QUESTION_RULES = [
+  {
+    skills: ['Product Management', 'Product Operations'],
+    value:
+      'Tell me about a product you improved and how you identified the problem.',
+  },
+  {
+    skills: ['Data Analysis', 'Analytics'],
+    value: 'Tell me about a time you used data to make a product decision.',
+  },
+  {
+    skills: ['User Research'],
+    value: 'How have you used user research to influence a product decision?',
+  },
+  {
+    skills: ['Growth', 'Conversion Funnel'],
+    value: 'How would you diagnose a drop in conversion?',
+  },
+  {
+    skills: ['AI', 'Large Language Models'],
+    value: 'How would you design and evaluate an AI-powered product feature?',
+  },
+  {
+    skills: ['Cross-functional Collaboration', 'Stakeholder Management'],
+    value:
+      'Tell me about a time you worked with engineering, design or operations to deliver a project.',
+  },
+  {
+    skills: ['A/B Testing', 'Experimentation'],
+    value: 'How would you design an A/B test for a product change?',
+  },
+  {
+    skills: ['Roadmap'],
+    value: 'How do you prioritize features when resources are limited?',
+  },
+]
+
+const RESUME_QUESTION_RULES = [
+  {
+    pattern: /creator marketing/i,
+    value: 'Tell me about your creator marketing product experience.',
+  },
+  {
+    pattern: /ai-powered creator recommendation/i,
+    value: 'What problem was the AI recommendation feature solving?',
+  },
+  {
+    pattern: /user research/i,
+    value: 'How did you conduct user research and what changed as a result?',
+  },
+  {
+    pattern: /conversion funnels?/i,
+    value: 'Which funnel metrics did you monitor and why?',
+  },
+  {
+    pattern: /product usage data|user behavior/i,
+    value: 'What insight did you find in product usage or user behavior data?',
+  },
+  {
+    pattern: /collaborat(?:e|ed|ion).*engineering|cross-functional/i,
+    value:
+      'What was your role when collaborating with product, engineering or operations?',
+  },
+]
+
+const GAP_QUESTION_RULES = [
+  {
+    skills: ['SQL'],
+    value:
+      'The role mentions SQL. How comfortable are you with querying or interpreting data?',
+  },
+  {
+    skills: ['A/B Testing', 'Experimentation'],
+    value:
+      'The JD requires experimentation. What experience do you have with A/B testing?',
+  },
+  {
+    skills: ['Roadmap'],
+    value: 'How have you prioritized a roadmap or competing product requests?',
+  },
+  {
+    skills: ['Communication'],
+    value:
+      'The role emphasizes communication. Which genuine example best shows how you communicate clearly?',
+  },
+  {
+    skills: ['Problem Solving'],
+    value: 'How would you approach an unfamiliar product or business problem?',
+  },
+  {
+    skills: ['Leadership'],
+    value: 'The role mentions leadership. What relevant experience can you discuss honestly?',
+  },
+]
+
+const STAR_STORY_RULES = [
+  {
+    skills: ['User Research', 'Product Management'],
+    value: 'Prepare one story about identifying a user problem.',
+  },
+  {
+    skills: ['Data Analysis', 'Analytics', 'SQL'],
+    value: 'Prepare one story about using data to make a decision.',
+  },
+  {
+    skills: ['Cross-functional Collaboration', 'Stakeholder Management'],
+    value: 'Prepare one story about cross-functional collaboration.',
+  },
+  {
+    skills: ['Product Management', 'Roadmap'],
+    value: 'Prepare one story about a difficult product trade-off.',
+  },
+  {
+    skills: ['Growth', 'Product Metrics', 'Conversion Funnel'],
+    value: 'Prepare one story about improving a business or product metric.',
+  },
+]
+
 const RESPONSIBILITY_RULES = [
   {
     label: 'Product requirement definition',
@@ -209,6 +423,258 @@ const KEYWORD_RULES = [
 
 function matchRules(text, rules) {
   return rules.filter((rule) => rule.pattern.test(text)).map((rule) => rule.label)
+}
+
+function extractRequiredSkills(text) {
+  return matchRules(text, RESUME_MATCH_SKILL_RULES)
+}
+
+function extractResumeSkills(text) {
+  return matchRules(text, RESUME_MATCH_SKILL_RULES)
+}
+
+function compareSkills(requiredSkills, resumeSkills) {
+  const resumeSkillSet = new Set(resumeSkills)
+
+  return {
+    matchedSkills: requiredSkills.filter((skill) => resumeSkillSet.has(skill)),
+    missingSkills: requiredSkills.filter((skill) => !resumeSkillSet.has(skill)),
+  }
+}
+
+function selectSkillBasedItems(skills, rules, maxItems) {
+  const skillSet = new Set(skills)
+
+  return rules
+    .filter((rule) => rule.skills.some((skill) => skillSet.has(skill)))
+    .map((rule) => rule.value)
+    .slice(0, maxItems)
+}
+
+function generateInterviewPrepFocus(requiredSkills) {
+  return selectSkillBasedItems(requiredSkills, INTERVIEW_FOCUS_RULES, 6)
+}
+
+function generateLikelyQuestions(requiredSkills) {
+  return selectSkillBasedItems(requiredSkills, LIKELY_QUESTION_RULES, 8)
+}
+
+function generateResumeBasedQuestions(resume) {
+  return RESUME_QUESTION_RULES.filter((rule) => rule.pattern.test(resume))
+    .map((rule) => rule.value)
+    .slice(0, 6)
+}
+
+function generateGapQuestions(missingSkills) {
+  return selectSkillBasedItems(missingSkills, GAP_QUESTION_RULES, 5)
+}
+
+function generateSTARStories(requiredSkills) {
+  const stories = selectSkillBasedItems(requiredSkills, STAR_STORY_RULES, 5)
+
+  stories.push('Prepare one story about failure or disagreement.')
+  return stories.slice(0, 6)
+}
+
+function generatePreparationChecklist(requiredSkills) {
+  const required = new Set(requiredSkills)
+  const checklist = [
+    "Understand the company's product.",
+    "Understand the role's key metrics.",
+    'Prepare 3–5 STAR stories.',
+    'Review your strongest matching experiences.',
+    'Prepare answers for missing-skill areas.',
+    'Prepare 2–3 questions for the interviewer.',
+  ]
+
+  if (required.has('AI') || required.has('Large Language Models')) {
+    checklist.push(
+      'Be ready to discuss AI product evaluation, hallucination, latency and cost trade-offs.',
+    )
+  }
+  if (required.has('Growth')) {
+    checklist.push(
+      'Be ready to explain a growth funnel and North Star metric.',
+    )
+  }
+
+  return checklist
+}
+
+function calculatePreparationPriority(requiredSkills, matchedSkills, missingSkills) {
+  const missing = new Set(missingSkills)
+  const matched = new Set(matchedSkills)
+  const coreSkills = new Set(['Product Management', 'AI', 'Data Analysis'])
+  const mediumSkills = new Set([
+    'Growth',
+    'User Research',
+    'Cross-functional Collaboration',
+    'Stakeholder Management',
+  ])
+  const high = requiredSkills.filter(
+    (skill) => missing.has(skill) || coreSkills.has(skill),
+  )
+  const medium = requiredSkills.filter(
+    (skill) =>
+      matched.has(skill) && !high.includes(skill) && mediumSkills.has(skill),
+  )
+  const lower = requiredSkills.filter(
+    (skill) =>
+      matched.has(skill) && !high.includes(skill) && !medium.includes(skill),
+  )
+
+  return { high, medium, lower }
+}
+
+function generateInterviewPrep(jd, resume) {
+  const requiredSkills = extractRequiredSkills(jd)
+  const resumeSkills = extractResumeSkills(resume)
+  const { matchedSkills, missingSkills } = compareSkills(
+    requiredSkills,
+    resumeSkills,
+  )
+
+  return {
+    priority: calculatePreparationPriority(
+      requiredSkills,
+      matchedSkills,
+      missingSkills,
+    ),
+    focus: generateInterviewPrepFocus(requiredSkills),
+    likelyQuestions: generateLikelyQuestions(requiredSkills),
+    resumeQuestions: generateResumeBasedQuestions(resume),
+    gapQuestions: generateGapQuestions(missingSkills),
+    starStories: generateSTARStories(requiredSkills),
+    checklist: generatePreparationChecklist(requiredSkills),
+  }
+}
+
+function generateResumeStrengths(matchedSkills) {
+  const matched = new Set(matchedSkills)
+  const strengths = []
+
+  if (matched.has('AI') && matched.has('Product Management')) {
+    strengths.push('Your resume already shows relevant AI product experience.')
+  }
+  if (matched.has('Growth') && matched.has('Data Analysis')) {
+    strengths.push(
+      'Your resume demonstrates a combination of growth and data-driven product experience.',
+    )
+  }
+  if (matched.has('Creator Economy')) {
+    strengths.push(
+      'Your creator economy experience is particularly relevant to this role.',
+    )
+  }
+  if (matched.has('Cross-functional Collaboration')) {
+    strengths.push(
+      'Your resume shows experience working across product, engineering or operations teams.',
+    )
+  }
+  if (matched.has('User Research') && strengths.length < 4) {
+    strengths.push('Your resume includes relevant user research experience.')
+  }
+
+  if (strengths.length === 0) {
+    strengths.push(
+      'No clear strengths were found in the supported skill list yet.',
+    )
+  }
+
+  return strengths.slice(0, 4)
+}
+
+function generateResumeSuggestions(missingSkills) {
+  const missing = new Set(missingSkills)
+  const suggestions = []
+
+  if (missing.has('SQL')) {
+    suggestions.push(
+      'The JD mentions SQL, but your resume does not currently show SQL experience.',
+    )
+  }
+  if (missing.has('A/B Testing') || missing.has('Experimentation')) {
+    suggestions.push(
+      'Consider highlighting any experimentation or A/B testing experience if you genuinely have it.',
+    )
+  }
+  if (missing.has('Roadmap')) {
+    suggestions.push(
+      'If you have roadmap or prioritization experience, make it more explicit.',
+    )
+  }
+  if (missing.has('Stakeholder Management')) {
+    suggestions.push(
+      'If you genuinely have stakeholder management experience, describe one clear example.',
+    )
+  }
+
+  if (suggestions.length === 0) {
+    suggestions.push(
+      'Keep your existing examples specific and connect them clearly to the role.',
+    )
+  }
+
+  suggestions.push('Only highlight skills or experiences you genuinely have.')
+  return suggestions.slice(0, 5)
+}
+
+function generateInterviewRisks(missingSkills) {
+  const missing = new Set(missingSkills)
+  const risks = []
+
+  if (missing.has('SQL')) {
+    risks.push('The interviewer may ask about SQL or data querying.')
+  }
+  if (missing.has('A/B Testing') || missing.has('Experimentation')) {
+    risks.push('Be ready to explain your experience with experimentation.')
+  }
+  if (missing.has('Roadmap')) {
+    risks.push('You may be asked how you prioritize a product roadmap.')
+  }
+  if (missing.has('Stakeholder Management')) {
+    risks.push('You may be asked how you manage stakeholder expectations.')
+  }
+  if (missing.has('Leadership')) {
+    risks.push('The interviewer may ask for an example of leadership.')
+  }
+
+  if (risks.length === 0) {
+    risks.push(
+      'Prepare examples that prove the matched skills shown in your resume.',
+    )
+  }
+
+  return risks.slice(0, 5)
+}
+
+function matchResumeToJD(jd, resume) {
+  const requiredSkills = extractRequiredSkills(jd)
+  const resumeSkills = extractResumeSkills(resume)
+  const { matchedSkills, missingSkills } = compareSkills(
+    requiredSkills,
+    resumeSkills,
+  )
+  const matchRatio = requiredSkills.length
+    ? matchedSkills.length / requiredSkills.length
+    : 0
+  const matchLevel =
+    matchRatio >= 0.7
+      ? 'Strong Match'
+      : matchRatio >= 0.4
+        ? 'Moderate Match'
+        : 'Limited Match'
+
+  return {
+    requiredSkills,
+    matchedSkills,
+    missingSkills,
+    matchLevel,
+    strengths: generateResumeStrengths(matchedSkills),
+    suggestions: generateResumeSuggestions(missingSkills),
+    interviewRisks: generateInterviewRisks(missingSkills),
+    keywordsToEmphasize: matchedSkills.slice(0, 8),
+  }
 }
 
 function extractResponsibilities(text) {
@@ -488,6 +954,14 @@ function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [aiConfigured, setAiConfigured] = useState(null)
   const [showBasicFallback, setShowBasicFallback] = useState(false)
+  const [resumeMatchJD, setResumeMatchJD] = useState('')
+  const [resumeText, setResumeText] = useState('')
+  const [resumeMatchResult, setResumeMatchResult] = useState(null)
+  const [resumeMatchError, setResumeMatchError] = useState('')
+  const [interviewPrepJD, setInterviewPrepJD] = useState('')
+  const [interviewPrepResume, setInterviewPrepResume] = useState('')
+  const [interviewPrepResult, setInterviewPrepResult] = useState(null)
+  const [interviewPrepError, setInterviewPrepError] = useState('')
   const { jobs, counts } = data
 
   useEffect(() => {
@@ -735,6 +1209,90 @@ function App() {
     setShowBasicFallback(false)
   }
 
+  function updateResumeMatchJD(event) {
+    setResumeMatchJD(event.target.value)
+    setResumeMatchError('')
+  }
+
+  function updateResumeText(event) {
+    setResumeText(event.target.value)
+    setResumeMatchError('')
+  }
+
+  function loadResumeMatchSample() {
+    setResumeMatchJD(RESUME_MATCH_SAMPLE_JD)
+    setResumeText(RESUME_MATCH_SAMPLE_RESUME)
+    setResumeMatchResult(null)
+    setResumeMatchError('')
+  }
+
+  function handleResumeMatch() {
+    if (!resumeMatchJD.trim()) {
+      setResumeMatchResult(null)
+      setResumeMatchError('Please paste a job description.')
+      return
+    }
+
+    if (!resumeText.trim()) {
+      setResumeMatchResult(null)
+      setResumeMatchError('Please paste your resume.')
+      return
+    }
+
+    setResumeMatchResult(matchResumeToJD(resumeMatchJD, resumeText))
+    setResumeMatchError('')
+  }
+
+  function clearResumeMatch() {
+    setResumeMatchJD('')
+    setResumeText('')
+    setResumeMatchResult(null)
+    setResumeMatchError('')
+  }
+
+  function updateInterviewPrepJD(event) {
+    setInterviewPrepJD(event.target.value)
+    setInterviewPrepError('')
+  }
+
+  function updateInterviewPrepResume(event) {
+    setInterviewPrepResume(event.target.value)
+    setInterviewPrepError('')
+  }
+
+  function loadInterviewPrepSample() {
+    setInterviewPrepJD(RESUME_MATCH_SAMPLE_JD)
+    setInterviewPrepResume(RESUME_MATCH_SAMPLE_RESUME)
+    setInterviewPrepResult(null)
+    setInterviewPrepError('')
+  }
+
+  function handleGenerateInterviewPrep() {
+    if (!interviewPrepJD.trim()) {
+      setInterviewPrepResult(null)
+      setInterviewPrepError('Please paste a job description.')
+      return
+    }
+
+    if (!interviewPrepResume.trim()) {
+      setInterviewPrepResult(null)
+      setInterviewPrepError('Please paste your resume.')
+      return
+    }
+
+    setInterviewPrepResult(
+      generateInterviewPrep(interviewPrepJD, interviewPrepResume),
+    )
+    setInterviewPrepError('')
+  }
+
+  function clearInterviewPrep() {
+    setInterviewPrepJD('')
+    setInterviewPrepResume('')
+    setInterviewPrepResult(null)
+    setInterviewPrepError('')
+  }
+
   return (
     <div className="page">
       <header className="nav">
@@ -769,8 +1327,28 @@ function App() {
             >
               JD Analyzer
             </button>
-            <span>Resume Match</span>
-            <span>Interview Prep</span>
+            <button
+              type="button"
+              className={`nav-link ${
+                activeView === 'resume-match' ? 'active' : ''
+              }`}
+              aria-current={activeView === 'resume-match' ? 'page' : undefined}
+              onClick={() => setActiveView('resume-match')}
+            >
+              Resume Match
+            </button>
+            <button
+              type="button"
+              className={`nav-link ${
+                activeView === 'interview-prep' ? 'active' : ''
+              }`}
+              aria-current={
+                activeView === 'interview-prep' ? 'page' : undefined
+              }
+              onClick={() => setActiveView('interview-prep')}
+            >
+              Interview Prep
+            </button>
           </nav>
         </div>
       </header>
@@ -954,7 +1532,7 @@ function App() {
               </div>
             </div>
           </section>
-        ) : (
+        ) : activeView === 'jd-analyzer' ? (
           <section className="jd-page">
             <div className="section-inner jd-inner">
               <header className="jd-header">
@@ -1121,6 +1699,388 @@ function App() {
                   : aiConfigured
                     ? 'AI-powered JD analysis with a local basic-analysis fallback.'
                     : 'AI service is not configured. Local basic analysis is available.'}
+              </p>
+            </div>
+          </section>
+        ) : activeView === 'resume-match' ? (
+          <section className="resume-match-page">
+            <div className="section-inner">
+              <header className="resume-match-header">
+                <h1>Resume Match</h1>
+                <p>
+                  See how well your resume aligns with the role before you
+                  apply.
+                </p>
+              </header>
+
+              <div className="resume-match-input-card">
+                <div className="resume-match-inputs">
+                  <label className="resume-match-field" htmlFor="match-jd">
+                    Job Description
+                    <textarea
+                      id="match-jd"
+                      value={resumeMatchJD}
+                      onChange={updateResumeMatchJD}
+                      placeholder="Paste the job description here..."
+                    />
+                  </label>
+                  <label className="resume-match-field" htmlFor="match-resume">
+                    Resume
+                    <textarea
+                      id="match-resume"
+                      value={resumeText}
+                      onChange={updateResumeText}
+                      placeholder="Paste your resume here..."
+                    />
+                  </label>
+                </div>
+
+                <div className="resume-match-actions">
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleResumeMatch}
+                  >
+                    Match Resume
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={loadResumeMatchSample}
+                  >
+                    Load Sample
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-plain"
+                    onClick={clearResumeMatch}
+                  >
+                    Clear
+                  </button>
+                </div>
+
+                {resumeMatchError ? (
+                  <p className="resume-match-error" role="alert">
+                    {resumeMatchError}
+                  </p>
+                ) : null}
+              </div>
+
+              {resumeMatchResult ? (
+                <div className="resume-match-results" aria-live="polite">
+                  <section className="match-overview-card">
+                    <div>
+                      <p>Match Overview</p>
+                      <h2>{resumeMatchResult.matchLevel}</h2>
+                    </div>
+                    <strong
+                      className={`match-level match-${resumeMatchResult.matchLevel
+                        .toLowerCase()
+                        .replaceAll(' ', '-')}`}
+                    >
+                      {resumeMatchResult.matchedSkills.length} of{' '}
+                      {resumeMatchResult.requiredSkills.length} key skills
+                      matched
+                    </strong>
+                  </section>
+
+                  <div className="match-results-grid">
+                    <article className="match-result-card">
+                      <h2>Matched Skills</h2>
+                      {resumeMatchResult.matchedSkills.length > 0 ? (
+                        <div className="keyword-list">
+                          {resumeMatchResult.matchedSkills.map((skill) => (
+                            <span className="match-skill-tag" key={skill}>
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p>No matching skills found in both texts.</p>
+                      )}
+                    </article>
+
+                    <article className="match-result-card">
+                      <h2>Missing Skills</h2>
+                      {resumeMatchResult.missingSkills.length > 0 ? (
+                        <div className="keyword-list">
+                          {resumeMatchResult.missingSkills.map((skill) => (
+                            <span
+                              className="match-skill-tag match-skill-missing"
+                              key={skill}
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p>No missing skills found in the supported skill list.</p>
+                      )}
+                    </article>
+
+                    <article className="match-result-card">
+                      <h2>Resume Strengths</h2>
+                      <ul>
+                        {resumeMatchResult.strengths.map((strength) => (
+                          <li key={strength}>{strength}</li>
+                        ))}
+                      </ul>
+                    </article>
+
+                    <article className="match-result-card">
+                      <h2>Resume Improvement Suggestions</h2>
+                      <ul>
+                        {resumeMatchResult.suggestions.map((suggestion) => (
+                          <li key={suggestion}>{suggestion}</li>
+                        ))}
+                      </ul>
+                    </article>
+
+                    <article className="match-result-card">
+                      <h2>Interview Risk Areas</h2>
+                      <ul>
+                        {resumeMatchResult.interviewRisks.map((risk) => (
+                          <li key={risk}>{risk}</li>
+                        ))}
+                      </ul>
+                    </article>
+
+                    <article className="match-result-card">
+                      <h2>Resume Keywords to Emphasize</h2>
+                      {resumeMatchResult.keywordsToEmphasize.length > 0 ? (
+                        <div className="keyword-list">
+                          {resumeMatchResult.keywordsToEmphasize.map(
+                            (keyword) => (
+                              <span
+                                className="match-skill-tag match-keyword-tag"
+                                key={keyword}
+                              >
+                                {keyword}
+                              </span>
+                            ),
+                          )}
+                        </div>
+                      ) : (
+                        <p>No demonstrated keywords to recommend yet.</p>
+                      )}
+                    </article>
+                  </div>
+                </div>
+              ) : null}
+
+              <p className="resume-match-disclaimer">
+                Resume Match V1 uses local keyword matching. It does not infer
+                experience that is not written in your resume.
+              </p>
+            </div>
+          </section>
+        ) : (
+          <section className="resume-match-page">
+            <div className="section-inner">
+              <header className="resume-match-header">
+                <h1>Interview Prep</h1>
+                <p>
+                  Prepare the questions most likely to come up in your
+                  interview.
+                </p>
+              </header>
+
+              <div className="resume-match-input-card">
+                <div className="resume-match-inputs">
+                  <label className="resume-match-field" htmlFor="prep-jd">
+                    Job Description
+                    <textarea
+                      id="prep-jd"
+                      value={interviewPrepJD}
+                      onChange={updateInterviewPrepJD}
+                      placeholder="Paste the job description here..."
+                    />
+                  </label>
+                  <label className="resume-match-field" htmlFor="prep-resume">
+                    Resume
+                    <textarea
+                      id="prep-resume"
+                      value={interviewPrepResume}
+                      onChange={updateInterviewPrepResume}
+                      placeholder="Paste your resume here..."
+                    />
+                  </label>
+                </div>
+
+                <div className="resume-match-actions">
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleGenerateInterviewPrep}
+                  >
+                    Generate Interview Prep
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={loadInterviewPrepSample}
+                  >
+                    Load Sample
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-plain"
+                    onClick={clearInterviewPrep}
+                  >
+                    Clear
+                  </button>
+                </div>
+
+                {interviewPrepError ? (
+                  <p className="resume-match-error" role="alert">
+                    {interviewPrepError}
+                  </p>
+                ) : null}
+              </div>
+
+              {interviewPrepResult ? (
+                <div className="resume-match-results" aria-live="polite">
+                  <section className="prep-priority-card">
+                    <h2>Preparation Priority</h2>
+                    <div className="prep-priority-grid">
+                      <div className="prep-priority-group">
+                        <h3>High Priority</h3>
+                        {interviewPrepResult.priority.high.length > 0 ? (
+                          <div className="keyword-list">
+                            {interviewPrepResult.priority.high.map((skill) => (
+                              <span
+                                className="prep-priority-tag prep-priority-high"
+                                key={skill}
+                              >
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p>No high-priority areas identified.</p>
+                        )}
+                      </div>
+                      <div className="prep-priority-group">
+                        <h3>Medium Priority</h3>
+                        {interviewPrepResult.priority.medium.length > 0 ? (
+                          <div className="keyword-list">
+                            {interviewPrepResult.priority.medium.map((skill) => (
+                              <span
+                                className="prep-priority-tag prep-priority-medium"
+                                key={skill}
+                              >
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p>No medium-priority areas identified.</p>
+                        )}
+                      </div>
+                      <div className="prep-priority-group">
+                        <h3>Lower Priority</h3>
+                        {interviewPrepResult.priority.lower.length > 0 ? (
+                          <div className="keyword-list">
+                            {interviewPrepResult.priority.lower.map((skill) => (
+                              <span
+                                className="prep-priority-tag prep-priority-lower"
+                                key={skill}
+                              >
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p>No lower-priority areas identified.</p>
+                        )}
+                      </div>
+                    </div>
+                  </section>
+
+                  <div className="match-results-grid">
+                    <article className="match-result-card">
+                      <h2>Interview Focus</h2>
+                      {interviewPrepResult.focus.length > 0 ? (
+                        <div className="keyword-list">
+                          {interviewPrepResult.focus.map((focus) => (
+                            <span className="match-skill-tag" key={focus}>
+                              {focus}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p>No supported interview focus areas found.</p>
+                      )}
+                    </article>
+
+                    <article className="match-result-card">
+                      <h2>Likely Interview Questions</h2>
+                      {interviewPrepResult.likelyQuestions.length > 0 ? (
+                        <ul>
+                          {interviewPrepResult.likelyQuestions.map(
+                            (question) => (
+                              <li key={question}>{question}</li>
+                            ),
+                          )}
+                        </ul>
+                      ) : (
+                        <p>No skill-based questions were generated.</p>
+                      )}
+                    </article>
+
+                    <article className="match-result-card">
+                      <h2>Resume-Based Questions</h2>
+                      {interviewPrepResult.resumeQuestions.length > 0 ? (
+                        <ul>
+                          {interviewPrepResult.resumeQuestions.map(
+                            (question) => (
+                              <li key={question}>{question}</li>
+                            ),
+                          )}
+                        </ul>
+                      ) : (
+                        <p>No supported resume experience keywords found.</p>
+                      )}
+                    </article>
+
+                    <article className="match-result-card">
+                      <h2>Gap / Risk Questions</h2>
+                      {interviewPrepResult.gapQuestions.length > 0 ? (
+                        <ul>
+                          {interviewPrepResult.gapQuestions.map((question) => (
+                            <li key={question}>{question}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p>No supported missing-skill risks found.</p>
+                      )}
+                    </article>
+
+                    <article className="match-result-card">
+                      <h2>STAR Stories to Prepare</h2>
+                      <ul>
+                        {interviewPrepResult.starStories.map((story) => (
+                          <li key={story}>{story}</li>
+                        ))}
+                      </ul>
+                    </article>
+
+                    <article className="match-result-card">
+                      <h2>Final Preparation Checklist</h2>
+                      <ul className="prep-checklist">
+                        {interviewPrepResult.checklist.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </article>
+                  </div>
+                </div>
+              ) : null}
+
+              <p className="resume-match-disclaimer">
+                Interview Prep V1 uses local rule-based analysis. Questions are
+                generated only from the job description and resume text
+                provided.
               </p>
             </div>
           </section>
