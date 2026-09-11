@@ -1011,3 +1011,19 @@ tbody tr:last-child td {
     min-height: 260px;
   }
 }
+
+.analysis-mode { margin-bottom: 24px; padding: 18px 22px; border: 1px solid #dce5f0; border-radius: 12px; background: #f5f8ff; }
+.analysis-mode strong { margin-right: 14px; }
+.analysis-mode p { margin: 10px 0 0; color: #526176; }
+button:disabled { opacity: .6; cursor: wait; }
+
+.job-detail-heading { margin: 28px 0; overflow-wrap: anywhere; }
+.job-detail-heading h1 { margin: 0 0 8px; }
+.job-detail-heading p { margin: 0; font-size: 20px; color: #526176; }
+.job-detail-meta { display: flex; flex-wrap: wrap; gap: 24px 48px; margin: 0 0 28px; }
+.job-detail-meta dt { color: #526176; font-size: 14px; margin-bottom: 8px; }
+.job-detail-meta dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.job-description { margin-top: 28px; }
+.job-description p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.job-context { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+.job-context p { margin: 0; overflow-wrap: anywhere; }
