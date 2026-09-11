@@ -1,8 +1,18 @@
 # JobFlow AI
 
+Live Demo: [https://job-flow-ai-kappa.vercel.app](https://job-flow-ai-kappa.vercel.app)
+
 An AI-ready job search workspace that helps candidates track applications, understand job descriptions, match their resume to roles, and prepare for interviews.
 
-**Current stage:** a local-first portfolio project with working Basic Analysis and an AI-ready backend. AI is disabled by default. No account or API key is needed to explore the Basic workflow.
+## Live Demo
+
+[https://job-flow-ai-kappa.vercel.app](https://job-flow-ai-kappa.vercel.app)
+
+The live version defaults to **Basic Analysis**, with an **AI-ready backend** already in place. With `AI_ENABLED=false`, no paid model requests are sent. No account or API key is needed to explore the Basic workflow.
+
+When AI access is available, server-side environment variables can select OpenAI, DeepSeek or a compatible endpoint without changing the frontend. See the provider configuration below.
+
+[GitHub Repository](https://github.com/liqutian2001-Serena/JobFlow-AI)
 
 ## Why I built this
 
@@ -10,7 +20,7 @@ Job searching often means applications scattered across platforms, repetitive JD
 
 ## Core Workflow
 
-**Save Resume → Track Jobs → Open Job → Analyze JD → Match Resume → Prepare Interview**
+**Save Resume → Track Jobs → Analyze JD → Match Resume → Prepare Interview**
 
 Save your experience in **My Resume**, then add a job with its description. Open the job to review its details and move into any analysis module. The saved JD is filled in automatically; Resume Match and Interview Prep also load your saved resume. Analysis starts only when you click its action button.
 
@@ -72,7 +82,7 @@ AI_MODEL=gpt-5.6-luna
 AI_BASE_URL=
 ```
 
-With `AI_ENABLED=false`, the server blocks AI requests before constructing an OpenAI client. **No paid OpenAI requests are sent in this mode.** Basic analysis runs locally in the browser.
+With `AI_ENABLED=false`, the server blocks requests to every model provider before creating a client. **No paid model requests are sent in this mode.** Basic analysis runs locally in the browser.
 
 | Endpoint | Purpose |
 | --- | --- |
@@ -176,7 +186,7 @@ These are possible future directions, **not implemented features**:
 
 ## Deploying to Vercel
 
-Deployment preparation is complete; this stage has not created or deployed a Vercel project.
+The live demo is hosted on Vercel. To deploy your own copy, use the settings below.
 
 Import the repository with **Framework: Vite**, **Build Command: npm run build**, **Output Directory: dist**, and **Node.js 24.x**. The small vercel.json pins these frontend settings so server.mjs remains the local entry point. Files in api/ export individual Node.js request handlers and do not start a listening server. No SPA rewrite is needed because navigation uses React state.
 
@@ -190,7 +200,7 @@ When you have API quota and want to enable real AI, set the following in **Verce
 | AI_PROVIDER | openai or deepseek |
 | AI_BASE_URL | Leave empty for OpenAI official API; required for DeepSeek |
 | AI_API_KEY | Your secret API key, entered only in Vercel settings |
-| AI_MODEL | gpt-5.6-luna (optional) |
+| AI_MODEL | Defaults to gpt-5.6-luna for OpenAI; specify your chosen model for DeepSeek |
 
 Redeploy after changing variables, then refresh the site and check /api/ai-status. A missing key safely leaves Basic mode available even if AI_ENABLED=true. configured indicates complete local settings, not valid credentials or available quota. Real AI still depends on account access and network availability. These are server variables: never prefix them with VITE_ or put secrets into source/config files.
 
