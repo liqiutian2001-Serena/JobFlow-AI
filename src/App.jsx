@@ -3,6 +3,7 @@ import './App.css'
 import AnalysisPage from './components/AnalysisPage'
 import JobDetail from './components/JobDetail'
 import ResumeProfile from './components/ResumeProfile'
+import { calculateJobStats } from './services/jobStats'
 
 const STORAGE_KEY = 'jobflow-data'
 
@@ -55,36 +56,6 @@ const INITIAL_JOBS = [
   },
 ]
 
-const INITIAL_COUNTS = {
-  applications: 24,
-  screening: 12,
-  interview: 6,
-  finalRound: 2,
-  offer: 1,
-}
-
-const INITIAL_DATA = {
-  jobs: INITIAL_JOBS,
-  counts: INITIAL_COUNTS,
-}
-
-const COUNT_KEYS = [
-  'applications',
-  'screening',
-  'interview',
-  'finalRound',
-  'offer',
-]
-
-const STATUS_CONTRIBUTIONS = {
-  Applied: [1, 0, 0, 0, 0],
-  Screening: [1, 1, 0, 0, 0],
-  Interview: [1, 1, 1, 0, 0],
-  'Final Round': [1, 1, 1, 1, 0],
-  Offer: [1, 1, 1, 1, 1],
-  Rejected: [1, 0, 0, 0, 0],
-}
-
 const EMPTY_FORM = {
   company: '',
   role: '',
@@ -99,7 +70,7 @@ function loadJobFlowData() {
     const savedData = localStorage.getItem(STORAGE_KEY)
 
     if (!savedData) {
-      return INITIAL_DATA
+      return INITIAL_JOBS
     }
 
     const parsedData = JSON.parse(savedData)
@@ -114,41 +85,15 @@ function loadJobFlowData() {
           STATUS_OPTIONS.includes(job.status) &&
           SOURCE_OPTIONS.includes(job.source),
       )
-    const hasValidCounts =
-      parsedData.counts &&
-      COUNT_KEYS.every(
-        (key) =>
-          Number.isInteger(parsedData.counts[key]) &&
-          parsedData.counts[key] >= 0,
-      )
-
-    if (!hasValidJobs || !hasValidCounts) {
-      return INITIAL_DATA
-    }
-
-    return {
-      jobs: parsedData.jobs,
-      counts: parsedData.counts,
-    }
+    // Legacy statistics are ignored, even if absent or invalid. Keep the jobs intact.
+    return hasValidJobs ? parsedData.jobs : INITIAL_JOBS
   } catch {
-    return INITIAL_DATA
+    return INITIAL_JOBS
   }
 }
 
-function applyStatusContribution(counts, status, direction) {
-  const contribution = STATUS_CONTRIBUTIONS[status]
-
-  return COUNT_KEYS.reduce(
-    (next, key, index) => ({
-      ...next,
-      [key]: counts[key] + contribution[index] * direction,
-    }),
-    {},
-  )
-}
-
 function App() {
-  const [data, setData] = useState(loadJobFlowData)
+  const [jobs, setJobs] = useState(loadJobFlowData)
   const [activeView, setActiveView] = useState('dashboard')
   const [selectedJobId, setSelectedJobId] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -156,7 +101,7 @@ function App() {
   const [jobToDelete, setJobToDelete] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState('')
-  const { jobs, counts } = data
+  const stats = calculateJobStats(jobs)
   // Read the current job from the existing data so edits appear immediately.
   const selectedJob = jobs.find((job) => job.id === selectedJobId) ?? null
 
@@ -172,15 +117,11 @@ function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ jobs }))
     } catch {
       // Keep the page usable if browser storage is unavailable.
     }
-  }, [data])
-
-  const interviewRate = counts.applications
-    ? Math.round((counts.interview / counts.applications) * 100)
-    : 0
+  }, [jobs])
 
   function openAddModal() {
     setError('')
@@ -236,67 +177,23 @@ function App() {
     }
 
     if (editingJobId !== null) {
-      setData((current) => {
-        const originalJob = current.jobs.find(
-          (job) => job.id === editingJobId,
-        )
-
-        if (!originalJob) {
-          return current
-        }
-
-        let nextJobCounts = current.counts
-
-        if (originalJob.status !== form.status) {
-          nextJobCounts = applyStatusContribution(
-            nextJobCounts,
-            originalJob.status,
-            -1,
-          )
-          nextJobCounts = applyStatusContribution(
-            nextJobCounts,
-            form.status,
-            1,
-          )
-        }
-
-        return {
-          jobs: current.jobs.map((job) =>
-            job.id === editingJobId ? { ...job, ...jobDetails } : job,
-          ),
-          counts: nextJobCounts,
-        }
-      })
+      setJobs((current) => current.map((job) =>
+        job.id === editingJobId ? { ...job, ...jobDetails } : job,
+      ))
     } else {
       const newJob = {
         id: Date.now(),
         ...jobDetails,
       }
 
-      setData((current) => ({
-        jobs: [newJob, ...current.jobs],
-        counts: applyStatusContribution(current.counts, form.status, 1),
-      }))
+      setJobs((current) => [newJob, ...current])
     }
 
     closeModal()
   }
 
   function deleteJob() {
-    setData((current) => {
-      const currentJob = current.jobs.find(
-        (job) => job.id === jobToDelete.id,
-      )
-
-      if (!currentJob) {
-        return current
-      }
-
-      return {
-        jobs: current.jobs.filter((job) => job.id !== currentJob.id),
-        counts: applyStatusContribution(current.counts, currentJob.status, -1),
-      }
-    })
+    setJobs((current) => current.filter((job) => job.id !== jobToDelete.id))
     setJobToDelete(null)
   }
 
@@ -403,19 +300,19 @@ function App() {
                 <div className="stat-grid">
                   <article className="card">
                     <p className="card-label">Applications</p>
-                    <p className="card-value">{counts.applications}</p>
+                    <p className="card-value">{stats.applications}</p>
                   </article>
                   <article className="card">
                     <p className="card-label">Interviews</p>
-                    <p className="card-value">{counts.interview}</p>
+                    <p className="card-value">{stats.interview}</p>
                   </article>
                   <article className="card">
                     <p className="card-label">Interview Rate</p>
-                    <p className="card-value">{interviewRate}%</p>
+                    <p className="card-value">{stats.interviewRate}%</p>
                   </article>
                   <article className="card">
                     <p className="card-label">Offers</p>
-                    <p className="card-value">{counts.offer}</p>
+                    <p className="card-value">{stats.offers}</p>
                   </article>
                 </div>
               </div>
@@ -427,23 +324,23 @@ function App() {
                 <div className="funnel">
                   <article className="funnel-step">
                     <p className="card-label">Applied</p>
-                    <p className="card-value">{counts.applications}</p>
+                    <p className="card-value">{stats.applications}</p>
                   </article>
                   <article className="funnel-step">
                     <p className="card-label">Screening</p>
-                    <p className="card-value">{counts.screening}</p>
+                    <p className="card-value">{stats.screening}</p>
                   </article>
                   <article className="funnel-step">
                     <p className="card-label">Interview</p>
-                    <p className="card-value">{counts.interview}</p>
+                    <p className="card-value">{stats.interview}</p>
                   </article>
                   <article className="funnel-step">
                     <p className="card-label">Final Round</p>
-                    <p className="card-value">{counts.finalRound}</p>
+                    <p className="card-value">{stats.finalRound}</p>
                   </article>
                   <article className="funnel-step">
                     <p className="card-label">Offer</p>
-                    <p className="card-value">{counts.offer}</p>
+                    <p className="card-value">{stats.offers}</p>
                   </article>
                 </div>
               </div>
