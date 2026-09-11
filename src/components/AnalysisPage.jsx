@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { getAIStatus, analyzeJD, matchResume, generateInterviewPrep, AI_UNAVAILABLE } from '../services/aiService'
 import { basicJD, basicResume, basicInterview } from '../services/basicResults'
 import { SAMPLE_JD, RESUME_MATCH_SAMPLE_JD, RESUME_MATCH_SAMPLE_RESUME } from '../services/basicAnalysis'
+import { readSavedResume } from '../services/resumeStorage'
 
 const pages = {
   'jd-analyzer': { title: 'JD Analyzer', subtitle: 'Understand what the role really requires before you apply.', button: 'Analyze JD', ai: analyzeJD, basic: basicJD },
@@ -22,7 +23,8 @@ export default function AnalysisPage({ kind, job = null, onBackToJob }) {
   const needsResume = kind !== 'jd-analyzer'
   // App remounts this page when its module or job context changes.
   const [jd, setJD] = useState(job?.jobDescription ?? '')
-  const [resume, setResume] = useState('')
+  const [savedResume] = useState(() => needsResume ? readSavedResume() : { text: '', error: '' })
+  const [resume, setResume] = useState(savedResume.text)
   const [status, setStatus] = useState(null)
   const [statusFailed, setStatusFailed] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -88,6 +90,10 @@ export default function AnalysisPage({ kind, job = null, onBackToJob }) {
                 : 'AI is enabled. Your text is sent for analysis only when you click the button.'}</p>
         </div>
         <div className="resume-match-input-card">
+          {needsResume && !savedResume.text && <p className="resume-match-disclaimer">
+            Save your resume in My Resume to reuse it automatically.
+          </p>}
+          {savedResume.error && <p className="resume-match-error" role="alert">{savedResume.error} You can still enter it manually.</p>}
           <div className={needsResume ? 'resume-match-inputs' : ''}>
             <label className="resume-match-field" htmlFor="analysis-jd">Job Description
               <textarea id="analysis-jd" disabled={busy} value={jd} onChange={(event) => { setJD(event.target.value); resetResult() }} placeholder="Paste the full job description here..." />

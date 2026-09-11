@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import AnalysisPage from './components/AnalysisPage'
 import JobDetail from './components/JobDetail'
+import ResumeProfile from './components/ResumeProfile'
 
 const STORAGE_KEY = 'jobflow-data'
 
@@ -355,6 +356,14 @@ function App() {
             >
               Interview Prep
             </button>
+            <button
+              type="button"
+              className={`nav-link ${activeView === 'my-resume' ? 'active' : ''}`}
+              aria-current={activeView === 'my-resume' ? 'page' : undefined}
+              onClick={() => navigateTo('my-resume')}
+            >
+              My Resume
+            </button>
           </nav>
         </div>
       </header>
@@ -545,6 +554,8 @@ function App() {
               </div>
             </div>
           </section>
+        ) : activeView === 'my-resume' ? (
+          <ResumeProfile />
         ) : activeView === 'job-detail' ? (
           <JobDetail
             job={selectedJob}
